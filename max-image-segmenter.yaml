@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: max-image-segmenter
+spec:
+  selector:
+    app: max-image-segmenter
+  ports:
+  - port: 5000
+  type: NodePort
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: max-image-segmenter
+  labels:
+    app: max-image-segmenter
+spec:
+  selector:
+    matchLabels:
+      app: max-image-segmenter
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: max-image-segmenter
+    spec:
+      containers:
+      - name: max-image-segmenter
+        image: codait/max-image-segmenter:latest
+        ports:
+        - containerPort: 5000
