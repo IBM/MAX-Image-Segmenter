@@ -19,7 +19,7 @@ def test_response():
     response = json.loads(response)
 
     assert response['status'] == 'ok'
-    assert response['image_size'] == [513, 256]
+    assert response['image_size'] == [513, 257]
     assert len(response['seg_map']) == response['image_size'][1]
 
 
