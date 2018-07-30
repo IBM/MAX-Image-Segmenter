@@ -7,7 +7,7 @@ services:
 
 install:
   - docker build -t max-image-segmenter .
-  - docker run -it -d -p 5000:5000
+  - docker run -it -d -p 5000:5000 max-image-segmenter
 
 script:
   - python tests/test.py
