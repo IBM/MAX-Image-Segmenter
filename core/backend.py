@@ -84,7 +84,7 @@ def read_image(image_data):
         image = Image.open(io.BytesIO(image_data))
     except:
         from flask import abort
-        abort(400, "Error reading image. Only JPEG supported.")
+        abort(400, "Error reading image.")
 
     return image
 

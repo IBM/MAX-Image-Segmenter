@@ -1,7 +1,7 @@
 # IBM Code Model Asset Exchange: Image Segmentation
 
-This repository contains code to instantiate and deploy an image segmentation model. This model takes a JPEG image
-input and returns a segmentation map containing a predicted class for each pixel in the input image.
+This repository contains code to instantiate and deploy an image segmentation model. This model takes an image file as
+an input and returns a segmentation map containing a predicted class for each pixel in the input image.
 
 This repository contains 2 models trained on PASCAL VOC 2012. One model is trained using the xception architecture and
 produces very accurate results but takes a few seconds to run and the other model is trained on MobileNetV2 and is
@@ -32,7 +32,7 @@ in a Docker container. This repository was developed as part of the [IBM Code Mo
 
 | Domain        | Application                 | Industry | Framework  | Training Data                                                   | Input Data Format |
 |---------------|-----------------------------|----------|------------|-----------------------------------------------------------------|-------------------|
-| Image & Video | Semantic image segmentation | Multi    | Tensorflow | VOC2012 ~10k images | JPEG image files |
+| Image & Video | Semantic image segmentation | Multi    | Tensorflow | VOC2012 ~10k images | Image file |
 
 
 ## References
