@@ -85,7 +85,7 @@ def read_image(image_data):
     except Exception as excptn:
         print(str(excptn))
         from flask import abort
-        abort(400, "Error reading image.")
+        abort(400, "The provided input is not a valid image.")
 
     return image
 
