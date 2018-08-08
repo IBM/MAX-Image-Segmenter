@@ -80,7 +80,13 @@ class DeepLabModel(object):
 
 
 def read_image(image_data):
-    image = Image.open(io.BytesIO(image_data))
+    try:
+        image = Image.open(io.BytesIO(image_data))
+    except Exception as excptn:
+        print(str(excptn))
+        from flask import abort
+        abort(400, "The provided input is not a valid image.")
+
     return image
 
 
