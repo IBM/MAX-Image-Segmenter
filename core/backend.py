@@ -82,7 +82,8 @@ class DeepLabModel(object):
 def read_image(image_data):
     try:
         image = Image.open(io.BytesIO(image_data))
-    except:
+    except Exception as excptn:
+        print(str(excptn))
         from flask import abort
         abort(400, "Error reading image.")
 
