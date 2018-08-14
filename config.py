@@ -25,5 +25,5 @@ MODEL_META_DATA = {
     'license': '{}'.format(MODEL_LICENSE)
 }
 
-_FULL_MODEL_PATH = "/workspace/assets/deeplabv3_pascal_trainval_2018_01_04.tar.gz"
-_MOBILE_MODEL_PATH = "/workspace/assets/deeplabv3_mnv2_pascal_trainval_2018_01_29.tar.gz"  # Mobile net version
+_FULL_MODEL_PATH = "/workspace/assets/deeplabv3_pascal_trainval"
+_MOBILE_MODEL_PATH = "/workspace/assets/deeplabv3_mnv2_pascal_trainval"  # Mobile net version

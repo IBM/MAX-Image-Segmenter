@@ -27,6 +27,7 @@ segmentation map refers to pixels in the resized image, not the original input i
 The model files are hosted on IBM Cloud Object Storage. The code in this repository deploys the model as a web service
 in a Docker container. This repository was developed as part of the [IBM Code Model Asset Exchange](https://developer.ibm.com/code/exchanges/models/).
 
+TODO - add info about building mobile vs full
 
 ## Model Metadata
 

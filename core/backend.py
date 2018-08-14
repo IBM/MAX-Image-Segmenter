@@ -2,7 +2,6 @@
 # and was released under an Apache 2 license
 
 import os
-import tarfile
 import numpy as np
 import tensorflow as tf
 import warnings
@@ -35,20 +34,17 @@ class DeepLabModel(object):
     OUTPUT_TENSOR_NAME = 'SemanticPredictions:0'
     FROZEN_GRAPH_NAME = 'frozen_inference_graph'
 
-    def __init__(self, tarball_path):
+    def __init__(self, model_path):
         """Creates and loads pre-trained deeplab model."""
         self.graph = tf.Graph()
 
         graph_def = None
-        # Extract frozen graph from tar archive.
-        tar_file = tarfile.open(tarball_path)
-        for tar_info in tar_file.getmembers():
-            if self.FROZEN_GRAPH_NAME in os.path.basename(tar_info.name):
-                file_handle = tar_file.extractfile(tar_info)
-                graph_def = tf.GraphDef.FromString(file_handle.read())
+        # Extract frozen graph
+        for file_name in os.listdir(model_path):
+            if self.FROZEN_GRAPH_NAME in os.path.basename(file_name):
+                file = open(model_path + "/" + file_name, "rb")
+                graph_def = tf.GraphDef.FromString(file.read())
                 break
-
-        tar_file.close()
 
         if graph_def is None:
             raise RuntimeError('Cannot find inference graph in tar archive.')
@@ -104,5 +100,3 @@ class ModelWrapper(object):
         resized_im, seg_map = self.model.run(x)
 
         return resized_im, seg_map
-
-
