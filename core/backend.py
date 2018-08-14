@@ -38,13 +38,9 @@ class DeepLabModel(object):
         """Creates and loads pre-trained deeplab model."""
         self.graph = tf.Graph()
 
-        graph_def = None
         # Extract frozen graph
-        for file_name in os.listdir(model_path):
-            if self.FROZEN_GRAPH_NAME in os.path.basename(file_name):
-                file = open(model_path + "/" + file_name, "rb")
-                graph_def = tf.GraphDef.FromString(file.read())
-                break
+        file = open(model_path, "rb")
+        graph_def = tf.GraphDef.FromString(file.read())
 
         if graph_def is None:
             raise RuntimeError('Cannot find inference graph in tar archive.')
