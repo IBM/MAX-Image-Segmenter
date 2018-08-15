@@ -6,8 +6,8 @@ RUN pip install numpy && \
     pip install tensorflow && \
     pip install pillow
 
-RUN wget -nv --show-progress --progress=bar:force:noscroll http://max-assets.s3-api.us-geo.objectstorage.softlayer.net/deeplab/full/frozen_inference_graph.pb && \
-  mv frozen_inference_graph.pb /workspace/assets/full.pb
+RUN wget -nv --show-progress --progress=bar:force:noscroll http://max-assets.s3-api.us-geo.objectstorage.softlayer.net/deeplab/full.pb && \
+  mv full.pb /workspace/assets/full.pb
 
 ENV MODEL_TYPE="full"
 

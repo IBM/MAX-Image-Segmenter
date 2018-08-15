@@ -43,7 +43,7 @@ class DeepLabModel(object):
         graph_def = tf.GraphDef.FromString(file.read())
 
         if graph_def is None:
-            raise RuntimeError('Cannot find inference graph in tar archive.')
+            raise RuntimeError('Error reading inference graph.')
 
         with self.graph.as_default():
             tf.import_graph_def(graph_def, name='')
