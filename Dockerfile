@@ -12,7 +12,8 @@ RUN wget -nv http://max-assets.s3-api.us-geo.objectstorage.softlayer.net/deeplab
 
 RUN pip install numpy && \
     pip install tensorflow && \
-    pip install pillow
+    pip install pillow && \
+    pip install flask-cors
 
 COPY . /workspace
 
