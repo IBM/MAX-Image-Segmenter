@@ -105,3 +105,4 @@ ENV/
 
 /deeplabv3_pascal_trainval_2018_01_04.tar.gz
 /.pytest_cache/
+.DS_Store
