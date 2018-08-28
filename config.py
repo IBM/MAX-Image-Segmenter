@@ -1,9 +1,6 @@
 # Flask settings
 DEBUG = True
 
-# CORS settings
-CORS_ENABLE = False
-
 # Flask-restplus settings
 RESTPLUS_MASK_SWAGGER = False
 SWAGGER_UI_DOC_EXPANSION = 'none'

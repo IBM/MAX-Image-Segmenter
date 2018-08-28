@@ -12,8 +12,9 @@ if 'APP_CONFIG' in os.environ:
     app.config.from_envvar('APP_CONFIG')
 api.init_app(app)
 # enable CORS if flag set in config
-if app.config['CORS_ENABLE'] == True:
+if os.getenv('CORS_ENABLE') == 'true':
     CORS(app, origins='*')
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0')
