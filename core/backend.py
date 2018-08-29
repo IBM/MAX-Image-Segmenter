@@ -1,7 +1,8 @@
 # This file contains code from https://github.com/tensorflow/models/blob/master/research/deeplab/deeplab_demo.ipynb
 # and was released under an Apache 2 license
-
+from __future__ import print_function
 import os
+import sys
 import tarfile
 import numpy as np
 import tensorflow as tf
@@ -18,6 +19,13 @@ logger = logging.getLogger()
 # Import model parameters as environmental variables if they were passed to docker run
 model_type = os.environ.get('MODEL_TYPE', default='mobile')
 image_size = int(os.environ.get('IMAGE_SIZE', default=513))
+cors_enable = os.environ.get('CORS_ENABLE', default='false')
+
+if (cors_enable == 'true') and (os.environ.get('WERKZEUG_RUN_MAIN') == 'true'):
+    print('\033[92m' + \
+    'NOTE: MAX model server is currently allowing cross-origin requests - ' + \
+    '\033[1m' + '(CORS ENABLED)' + '\033[0m' + \
+    '\033[0m', file=sys.stderr)
 
 if (image_size < 16) or (image_size > 1024):
     image_size = 513

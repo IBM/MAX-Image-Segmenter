@@ -15,6 +15,5 @@ api.init_app(app)
 if os.getenv('CORS_ENABLE') == 'true':
     CORS(app, origins='*')
 
-
 if __name__ == '__main__':
     app.run(host='0.0.0.0')
