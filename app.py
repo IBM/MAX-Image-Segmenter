@@ -1,9 +1,11 @@
 from __future__ import print_function
 import os
 import sys
+import logging
 from flask import Flask
 from api import api
 from flask_cors import CORS
+from logging.handlers import RotatingFileHandler
 
 app = Flask(__name__)
 
@@ -17,10 +19,12 @@ api.init_app(app)
 if os.getenv('CORS_ENABLE') == 'true' and \
 os.environ.get('WERKZEUG_RUN_MAIN') == 'true':
     CORS(app, origins='*')
-    print('\033[92m' + \
-    'NOTE: MAX model server is currently allowing cross-origin requests - ' + \
+    app.logger.info('\033[92m' + \
+    'NOTE: MAX Model Server is currently allowing ' + \
+    'cross-origin requests - ' + \
     '\033[1m' + '(CORS ENABLED)' + '\033[0m' + \
-    '\033[0m', file=sys.stderr)    
+    '\033[0m')    
 
 if __name__ == '__main__':
+    app.logger.setLevel(logging.INFO)
     app.run(host='0.0.0.0')
