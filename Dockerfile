@@ -10,9 +10,8 @@ RUN wget -nv http://max-assets.s3-api.us-geo.objectstorage.softlayer.net/deeplab
   mv deeplabv3_mnv2_pascal_trainval_2018_01_29.tar.gz /workspace/assets/deeplabv3_mnv2_pascal_trainval_2018_01_29.tar.gz
 
 
-RUN pip install numpy && \
-    pip install tensorflow && \
-    pip install pillow
+COPY requirements.txt /workspace
+RUN pip install -r requirements.txt
 
 COPY . /workspace
 
