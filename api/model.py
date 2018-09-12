@@ -22,22 +22,18 @@ class Model(Resource):
         return MODEL_META_DATA
 
 
-label_prediction = api.model('LabelPrediction', {
-    'label_id': fields.String(required=False, description='Label identifier'),
-    'label': fields.String(required=True, description='Class label'),
-    'probability': fields.Float(required=True)
-})
-
-
 predict_response = api.model('ModelPredictResponse', {
     'status': fields.String(required=True, description='Response status message'),
-    'image_size': fields.List(fields.Integer),
-    'seg_map': fields.List(fields.List(fields.Integer))
+    'image_size': fields.List(fields.Integer,
+                              description="The size of the output image segmentation map (may differ from input image)"),
+    'seg_map': fields.List(fields.List(fields.Integer,
+                                       description="Segmentation map containing a predicted class for each pixel"))
 })
 
 # set up parser for image input data
 image_parser = api.parser()
-image_parser.add_argument('image', type=FileStorage, location='files', required=True)
+image_parser.add_argument('image', type=FileStorage, location='files', required=True,
+                          help='An image file (encoded as PNG or JPG/JPEG)')
 
 
 @api.route('/predict')
