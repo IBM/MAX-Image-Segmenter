@@ -19,11 +19,9 @@ api.init_app(app)
 if os.getenv('CORS_ENABLE') == 'true' and \
 os.environ.get('WERKZEUG_RUN_MAIN') == 'true':
     CORS(app, origins='*')
-    app.logger.info('\033[92m' + \
+    app.logger.info(
     'NOTE: MAX Model Server is currently allowing ' + \
-    'cross-origin requests - ' + \
-    '\033[1m' + '(CORS ENABLED)' + '\033[0m' + \
-    '\033[0m')    
+    'cross-origin requests - (CORS ENABLED)')    
 
 if __name__ == '__main__':
     app.logger.setLevel(logging.INFO)
