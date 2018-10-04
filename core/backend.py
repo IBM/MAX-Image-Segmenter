@@ -1,6 +1,5 @@
 # This file contains code from https://github.com/tensorflow/models/blob/master/research/deeplab/deeplab_demo.ipynb
 # and was released under an Apache 2 license
-
 import os
 import tarfile
 import numpy as np

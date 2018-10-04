@@ -139,9 +139,16 @@ If you would like to specify what model or image size to load into the model, us
 $ docker run -it -e MODEL_TYPE='mobile' -e IMAGE_SIZE=333 -p 5000:5000 max-image-segmenter
 ```
 
+By default, Cross-Origin Resource Sharing (CORS) is disabled. To _enable_ CORS support, include the following -e flag with your run command:
+
+```
+$ docker run -it -e CORS_ENABLE='true' -p 5000:5000 max-image-segmenter
+```
+
 _Note_ extra parameter info:
 * Model types available: 'mobile', 'full' (default: mobile)
 * Image size range: 16 to 1024 pixels (default: 513)
+* CORS_ENABLE accepts either 'true' or 'false' (default: 'false')
 
 _Note_ that the image size parameter controls to what size the image will be resized to before it is processed by the model. Smaller images run faster but generate less accurate segmentation maps. 
 
