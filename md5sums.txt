@@ -1,0 +1,2 @@
+4020e71ab31636648101b000cca3b6b4  assets/deeplabv3_mnv2_pascal_trainval_2018_01_29.tar.gz
+7a4c217c0f122544678a4f590141ccf7  assets/deeplabv3_pascal_trainval_2018_01_04.tar.gz
