@@ -1,4 +1,4 @@
-# IBM Code Model Asset Exchange: Image Segmentation
+# IBM Developer Model Asset Exchange: Image Segmentation
 
 This repository contains code to instantiate and deploy an image segmentation model. This model takes an image file as
 an input and returns a segmentation map containing a predicted class for each pixel in the input image.
