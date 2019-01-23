@@ -33,7 +33,7 @@ class ModelPredictAPI(PredictAPI):
         image_data = args['image'].read()
         image = self.model_wrapper._read_image(image_data)
 
-        resized_im, seg_map = self.model_wrapper._predict(image)
+        resized_im, seg_map = self.model_wrapper.predict(image)
 
         result['image_size'] = resized_im.size
 

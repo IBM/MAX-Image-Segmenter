@@ -101,7 +101,7 @@ class ModelWrapper(MAXModelWrapper):
 
         return image
 
-    def _predict(self, x):
+    def predict(self, x):
         resized_im, seg_map = self.model.run(x)
 
         return resized_im, seg_map
