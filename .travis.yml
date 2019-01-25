@@ -8,10 +8,11 @@ services:
 install:
   - docker build -t max-image-segmenter .
   - docker run -it -d -p 5000:5000 max-image-segmenter
-  - sleep 10
+  - pip install pytest requests flake8
+  - flake8 . --max-line-length=127
 
 before_script:
-  - pip install pytest requests
+  - sleep 10
 
 script:
   - pytest tests/test.py

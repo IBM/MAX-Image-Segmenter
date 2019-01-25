@@ -10,6 +10,8 @@ from config import _MOBILE_MODEL_PATH
 from PIL import Image
 import io
 import logging
+from config import MODEL_META_DATA as model_meta
+from maxfw.model import MAXModelWrapper
 
 logger = logging.getLogger()
 
@@ -78,19 +80,9 @@ class DeepLabModel(object):
         return resized_image, seg_map
 
 
-def read_image(image_data):
-    try:
-        image = Image.open(io.BytesIO(image_data))
-    except Exception as excptn:
-        print(str(excptn))
-        from flask import abort
-        abort(400, "The provided input is not a valid image.")
-
-    return image
-
-
-class ModelWrapper(object):
+class ModelWrapper(MAXModelWrapper):
     """Model wrapper for TensorFlow models in SavedModel format"""
+    MODEL_META_DATA = model_meta
 
     def __init__(self):
         # Set model path based on environmental variable
@@ -99,9 +91,17 @@ class ModelWrapper(object):
         if model_type == 'mobile':
             self.model = DeepLabModel(_MOBILE_MODEL_PATH)
 
+    def _read_image(self, image_data):
+        try:
+            image = Image.open(io.BytesIO(image_data))
+        except Exception as excptn:
+            print(str(excptn))
+            from flask import abort
+            abort(400, "The provided input is not a valid image.")
+
+        return image
+
     def predict(self, x):
         resized_im, seg_map = self.model.run(x)
 
         return resized_im, seg_map
-
-
