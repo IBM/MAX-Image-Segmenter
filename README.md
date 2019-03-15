@@ -23,16 +23,14 @@ segmentation map refers to pixels in the resized image, not the original input i
 | 5  | bottle      | 12 | dog         | 19 | train       |
 | 6  | bus         | 13 | horse       | 20 | tv          |
 
-
 The model files are hosted on IBM Cloud Object Storage. The code in this repository deploys the model as a web service
 in a Docker container. This repository was developed as part of the [IBM Code Model Asset Exchange](https://developer.ibm.com/code/exchanges/models/).
-
 
 ## Model Metadata
 
 | Domain        | Application                 | Industry | Framework  | Training Data                                                   | Input Data Format |
 |---------------|-----------------------------|----------|------------|-----------------------------------------------------------------|-------------------|
-| Image & Video | Semantic image segmentation | Multi    | Tensorflow | VOC2012 ~10k images | Image file |
+| Image & Video | Object Detection | General    | Tensorflow | VOC2012 ~10k images | Image (PNG/JPG) |
 
 
 ## References
