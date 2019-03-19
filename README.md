@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.com/IBM/MAX-Image-Segmenter.svg?branch=master)](https://travis-ci.com/IBM/MAX-Image-Segmenter) [![Website Status](https://img.shields.io/website/http/max-image-segmenter.max.us-south.containers.appdomain.cloud/swagger.json.svg?label=api+demo)](http://max-image-segmenter.max.us-south.containers.appdomain.cloud/)
+
 # IBM Developer Model Asset Exchange: Image Segmentation
 
 This repository contains code to instantiate and deploy an image segmentation model. This model takes an image file as
