@@ -31,6 +31,17 @@ def test_metadata():
     assert 'max-image-segmenter' in metadata['source']
 
 
+def test_labels():
+
+    label_endpoint = 'http://localhost:5000/model/labels'
+
+    r = requests.get(url=label_endpoint)
+    assert r.status_code == 200
+
+    labels = r.json()
+    assert len(labels) == 21
+
+
 def _check_response(r):
     assert r.status_code == 200
     response = r.json()
