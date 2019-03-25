@@ -40,6 +40,8 @@ def test_labels():
 
     labels = r.json()
     assert len(labels) == 21
+    assert labels[3]['id'] == 3
+    assert labels[3]['name'] == 'bird'
 
 
 def _check_response(r):
