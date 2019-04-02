@@ -26,5 +26,5 @@ MODEL_META_DATA = {
     'source': 'https://developer.ibm.com/exchanges/models/all/max-image-segmenter'
 }
 
-_FULL_MODEL_PATH = "/workspace/assets/deeplabv3_pascal_trainval_2018_01_04.tar.gz"
-_MOBILE_MODEL_PATH = "/workspace/assets/deeplabv3_mnv2_pascal_trainval_2018_01_29.tar.gz"  # Mobile net version
+_FULL_MODEL_PATH = "assets/deeplabv3_pascal_trainval_2018_01_04.tar.gz"
+_MOBILE_MODEL_PATH = "assets/deeplabv3_mnv2_pascal_trainval_2018_01_29.tar.gz"  # Mobile net version

@@ -1,6 +1,6 @@
 FROM codait/max-base:v1.1.1
 
-ARG model_bucket=http://max-assets.s3-api.us-geo.objectstorage.softlayer.net/image-segmenter/1.0
+ARG model_bucket=http://max-assets.s3.us.cloud-object-storage.appdomain.cloud/image-segmenter/1.0
 ARG model_file=assets.tar.gz
 
 WORKDIR /workspace
@@ -12,7 +12,8 @@ RUN pip install -r requirements.txt
 
 COPY . /workspace
 
-RUN md5sum -c md5sums.txt  # check file integrity
+# check file integrity
+RUN md5sum -c md5sums.txt
 
 EXPOSE 5000
 
