@@ -109,3 +109,7 @@ ENV/
 .DS_Store
 *.png
 *.jpg
+*.pbtxt
+*.ckpt*
+*checkpoint
+*.tfevents*
