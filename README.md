@@ -52,7 +52,7 @@ in a Docker container. This repository was developed as part of the [IBM Code Mo
 | This repository | [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0) | [LICENSE](LICENSE) |
 | Model Code (3rd party) | [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0) | [TensorFlow Models Repository](https://github.com/tensorflow/models/blob/master/LICENSE) |
 | Model Weights | [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0) | [TensorFlow Models Repository](https://github.com/tensorflow/models/blob/master/LICENSE) |
-| Test Assets | [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0) | [Asset README](assets/README.md)
+| Test Assets | [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0) | [Asset README](samples/README.md)
 
 
 ## Prerequisites
@@ -166,7 +166,7 @@ get predicted segmentation map for the image from the API.
 You can also test it on the command line, for example:
 
 ```
-$ curl -F "image=@assets/stc.jpg" -XPOST http://localhost:5000/model/predict
+$ curl -F "image=@samples/stc.jpg" -XPOST http://localhost:5000/model/predict
 ```
 
 You should see a JSON response like that below:
