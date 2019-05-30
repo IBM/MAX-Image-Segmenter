@@ -10,7 +10,7 @@ TRAIN_LOGDIR="${RESULT_DIR}/model/checkpoint"
 DATASET="${DATASET_DIR}"
 SUMMARY_LOGDIR="${LOG_DIR}/logs/tb/test"
 
-NUM_ITERATIONS=1000
+NUM_ITERATIONS=100
 python "${WORK_DIR}"/train.py \
 --logtostderr \
 --train_split="train" \
