@@ -14,7 +14,7 @@ NUM_ITERATIONS=1000
 python "${WORK_DIR}"/train.py \
 --logtostderr \
 --train_split="train" \
---model_variant="xception_65" \
+--model_variant="mobilenet_v2" \
 --atrous_rates=6 \
 --atrous_rates=12 \
 --atrous_rates=18 \
