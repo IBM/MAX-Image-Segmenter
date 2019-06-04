@@ -42,7 +42,7 @@ process:
 - name: training_process
   params:
     staging_dir: training_output/
-    trained_model_path: trained_model/tensorflow/checkpoint/
+    trained_model_path: trained_model/tensorflow/frozen_graph_def/
 
 data_stores:
 - name: cloud_training_datastore

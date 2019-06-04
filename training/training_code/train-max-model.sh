@@ -73,21 +73,6 @@ cd ${RESULT_DIR}/model
 # If the output of the training run is a TensorFlow checkpoint, patch it. 
 #
 
-if [ -d ${RESULT_DIR}/model/checkpoint ]; then 
-  # the training run created a directory named checkpoint
-  if [ -f ${RESULT_DIR}/model/checkpoint/checkpoint ]; then
-    # this directory contains a checkpoint file; patch it
-    mv ${RESULT_DIR}/model/checkpoint/checkpoint ${RESULT_DIR}/model/checkpoint/checkpoint.bak
-    sed 's:/.*/::g' ${RESULT_DIR}/model/checkpoint/checkpoint.bak > ${RESULT_DIR}/model/checkpoint/checkpoint
-    if [ $? -gt 0 ]; then
-      echo "[Post processing] Warning. Patch of TensorFlow checkpoint file failed. "
-      mv ${RESULT_DIR}/model/checkpoint/checkpoint.bak ${RESULT_DIR}/model/checkpoint/checkpoint
-    else
-      echo "[Post processing] TensorFlow checkpoint file was successfully patched."
-      rm ${RESULT_DIR}/model/checkpoint/checkpoint.bak
-    fi
-  fi    
-fi  
 
 #
 # TODO: add custom code if required; e.g. to convert the
@@ -116,10 +101,11 @@ mkdir -p $TRAINING_STAGING_DIR
 # 3. copy trained model artifacts
 #
 # example for tensorflow checkpoint files
-if [ -d ${RESULT_DIR}/model/checkpoint ]; then
-  mkdir -p ${TRAINING_STAGING_DIR}/tensorflow
-  cp -R ${RESULT_DIR}/model/checkpoint ${TRAINING_STAGING_DIR}/tensorflow/
-fi  
+
+if [ -d ${RESULT_DIR}/model/frozen_graph_def ]; then
+ mkdir -p ${TRAINING_STAGING_DIR}/tensorflow/frozen_graph_def
+ cp ${RESULT_DIR}/model/frozen_graph_def/frozen_inference_graph.pb ${TRAINING_STAGING_DIR}/tensorflow/frozen_graph_def
+fi
 
 # The following files should now be present in BASE_STAGING_DIR
 #   trained_model/<framework-name>/file1
