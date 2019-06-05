@@ -7,23 +7,24 @@ ARG use_pre_trained_model=true
 
 WORKDIR /workspace
 RUN if [ "$use_pre_trained_model" = "true" ] ; then\
-  wget -nv --show-progress --progress=bar:force:noscroll ${model_bucket}/${model_file} --output-document=assets/${model_file} && \
-  tar -x -C assets/ -f assets/${model_file} -v && rm assets/${model_file}
+      wget -nv --show-progress --progress=bar:force:noscroll ${model_bucket}/${model_file} --output-document=assets/${model_file} && \
+      tar -x -C assets/ -f assets/${model_file} -v && rm assets/${model_file}; \
+    fi
 
 COPY requirements.txt /workspace
 RUN pip install -r requirements.txt
 
 COPY . /workspace
 
-# check file integrity
-# RUN md5sum -c md5sums.txt
-
-
-RUN if [ "$use_pre_trained_model" = "false" ] ; then \
+RUN if [ "$use_pre_trained_model" = "true" ] ; then \
+      # validate downloaded pre-trained model assets
+      md5sum -c md5sums.txt ; \
+    else \
       # rename the directory that contains the custom-trained model artifacts
-      mv /workspace/custom_assets/* /workspace/assets; \
+      if [ -d "./custom_assets/" ] ; then \
+        rm -rf ./assets && ln -s ./custom_assets ./assets ; \
+      fi \
     fi
-RUN ls -Ral /workspace/assets/
 
 EXPOSE 5000
 

@@ -36,21 +36,15 @@ class DeepLabModel(object):
     OUTPUT_TENSOR_NAME = 'SemanticPredictions:0'
     FROZEN_GRAPH_NAME = 'frozen_inference_graph'
 
-    def __init__(self, tarball_path):
+    def __init__(self, frozen_model_path):
         """Creates and loads pre-trained deeplab model."""
         self.graph = tf.Graph()
 
         graph_def = None
-        # Extract frozen graph from tar archive.
-        tar_file = tarfile.open(tarball_path)
-        for tar_info in tar_file.getmembers():
-            if self.FROZEN_GRAPH_NAME in os.path.basename(tar_info.name):
-                file_handle = tar_file.extractfile(tar_info)
-                graph_def = tf.GraphDef.FromString(file_handle.read())
-                break
-
-        tar_file.close()
-
+        with tf.gfile.GFile(frozen_model_path, "rb") as f:
+            graph_def = tf.GraphDef()
+            graph_def.ParseFromString(f.read())
+       
         if graph_def is None:
             raise RuntimeError('Cannot find inference graph in tar archive.')
 
@@ -101,7 +95,7 @@ class ModelWrapper(MAXModelWrapper):
 
         return image
 
-    def predict(self, x):
+    def _predict(self, x):
         resized_im, seg_map = self.model.run(x)
 
         return resized_im, seg_map

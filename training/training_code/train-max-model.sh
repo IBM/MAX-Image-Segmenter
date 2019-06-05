@@ -104,7 +104,13 @@ mkdir -p $TRAINING_STAGING_DIR
 
 if [ -d ${RESULT_DIR}/model/frozen_graph_def ]; then
  mkdir -p ${TRAINING_STAGING_DIR}/tensorflow/frozen_graph_def
- cp ${RESULT_DIR}/model/frozen_graph_def/frozen_inference_graph.pb ${TRAINING_STAGING_DIR}/tensorflow/frozen_graph_def
+ cp ${RESULT_DIR}/model/frozen_graph_def/*.pb ${TRAINING_STAGING_DIR}/tensorflow/frozen_graph_def
+fi
+
+
+if [ -d ${RESULT_DIR}/model/checkpoint ]; then
+ mkdir -p ${TRAINING_STAGING_DIR}/tensorflow/checkpoint
+ cp ${RESULT_DIR}/model/checkpoint/final/* ${TRAINING_STAGING_DIR}/tensorflow/checkpoint/
 fi
 
 # The following files should now be present in BASE_STAGING_DIR
