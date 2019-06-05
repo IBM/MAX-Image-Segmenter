@@ -1,9 +1,18 @@
 ## How to train this model using your own data
 
-  TODO 
+- [Prepare your data for training](#prepare-your-data-for-training)
+- [Train the model](#train-the-model)
+
+
+## Prepare your data for training
+
+To prepare your data for training complete the steps listed in [data_preparation/README.md](data_preparation/README.md).
+
+## Train the model
+
 
 In this document `$MODEL_REPO_HOME_DIR` refers to the cloned MAX model repository directory, e.g.
-`/users/hi_there/MAX-Object-Detector`. 
+`/users/hi_there/MAX-Image-Segmenter`. 
 
 ### Install local prerequisites
 
