@@ -8,6 +8,10 @@
 
 To prepare your data for training complete the steps listed in [data_preparation/README.md](data_preparation/README.md).
 
+## Using Pre Trained Weights
+
+If you wish to perform transfer learning or resume from a previous checkpoint, place the checkpoint files in the `$MODEL_REPO_HOME_DIR/training/sample_training_data/initial_model/` folder. The checkpoint files usually consist one `model.ckpt-<iteration_number>.data*` file, one corresponding `model.ckpt-<iteration_number>.index` file and a `checkpoint` file which has the name of the checkpoint. For example if you wish to resume from a previous training run of 30000 iterations, your files would ideally be called `model.ckpt-30000.data.0000-of-0001`, `model.ckpt-30000.index` and `checkpoint` with the checkpoint file having one entry `model_checkpoint_path: "model.ckpt-30000"`.
+
 ## Train the model
 
 
@@ -110,4 +114,18 @@ Open a terminal window, change dir into `$MODEL_REPO_HOME_DIR/training` and inst
 
 ### Re-build the Docker image
 
+Once the training run is complete, there should be an updated `frozen_inference_graph.pb` file in `$MODEL_REPO_HOME_DIR/custom_assets` folder. At this point the Docker container can be rebuilt using the command below from the root directory of the repo ie `$MODEL_REPO_HOME_DIR`.
+
+```shell
+
+$ docker build -t max-image-segmenter --build_arg use_pre_trained_model=false .
+
+```
+Once the container is built, run the following command to run the container as mentioned in the main readme section.
+
+```shell
+
+$ docker run -it -p 5000:5000 max-image-segmenter
+
+```
 

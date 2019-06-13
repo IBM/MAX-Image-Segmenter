@@ -66,6 +66,7 @@ in a Docker container. This repository was developed as part of the [IBM Code Mo
 1. [Deploy from Docker Hub](#deploy-from-docker-hub)
 2. [Deploy on Kubernetes](#deploy-on-kubernetes)
 3. [Run Locally](#run-locally)
+4. [Retrain the Model](#retrain-the-model)
 
 ## Deploy from Docker Hub
 
@@ -231,3 +232,7 @@ then need to rebuild the Docker image (see [step 1](#1-build-the-model)).
 ### 6. Cleanup
 
 To stop the Docker container, type `CTRL` + `C` in your terminal.
+
+## 4. Retrain the Model on Watson Machine Learning
+
+Whether fine tuning the model with transfer learning or training from scratch on a custom dataset, retraining the model is a power feature. Please follow the steps listed under the [training readme](training/README.md) to retrain the model.
