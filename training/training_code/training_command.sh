@@ -16,25 +16,42 @@ TRAIN_LOGDIR="${RESULT_DIR}/model/checkpoint"
 DATASET="${DATASET_DIR}"
 SUMMARY_LOGDIR="${LOG_DIR}/logs/tb/test"
 EXPORT_DIR="${RESULT_DIR}/model/frozen_graph_def"
+INIT_CKPT_DIR="${DATA_DIR}/initial_checkpoint/"
 
-NUM_ITERATIONS=10
+echo "Moving initial checkpoints to results directory..."
+mkdir -p $TRAIN_LOGDIR
+cp -a "${DATA_DIR}/initial_model/." ${TRAIN_LOGDIR}
+echo "Initial checkpoint moved succesfully."
+
+NUM_ITERATIONS=20
 python "${WORK_DIR}"/train.py \
 --logtostderr \
---train_split="train" \
+--train_split="trainval" \
 --model_variant="${MODEL_VARIANT}" \
---atrous_rates=6 \
---atrous_rates=12 \
---atrous_rates=18 \
---output_stride=16 \
---decoder_output_stride=4 \
---train_crop_size=513 \
---train_crop_size=513 \
---train_batch_size=4 \
 --training_number_of_steps="${NUM_ITERATIONS}" \
 --train_logdir="${TRAIN_LOGDIR}" \
 --summary_logdir="${SUMMARY_LOGDIR}" \
 --dataset="pqr" \
 --dataset_dir="${DATASET}"
+
+# NUM_ITERATIONS=20
+# python "${WORK_DIR}"/train.py \
+# --logtostderr \
+# --train_split="train" \
+# --model_variant="${MODEL_VARIANT}" \
+# --atrous_rates=6 \
+# --atrous_rates=12 \
+# --atrous_rates=18 \
+# --output_stride=8 \
+# --decoder_output_stride=4 \
+# --train_crop_size=513 \
+# --train_crop_size=513 \
+# --train_batch_size=4 \
+# --training_number_of_steps="${NUM_ITERATIONS}" \
+# --train_logdir="${TRAIN_LOGDIR}" \
+# --summary_logdir="${SUMMARY_LOGDIR}" \
+# --dataset="pqr" \
+# --dataset_dir="${DATASET}"
 
 RETURN_CODE_TRAIN=$?
 if [ $RETURN_CODE_TRAIN -gt 0 ]; then
@@ -47,6 +64,7 @@ CKPT_PATH="${TRAIN_LOGDIR}/model.ckpt-${NUM_ITERATIONS}"
 CHECKPOINT_FINAL_LOGDIR="${RESULT_DIR}/model/checkpoint/final"
 mkdir -p $CHECKPOINT_FINAL_LOGDIR
 cp ${CKPT_PATH}* ${CHECKPOINT_FINAL_LOGDIR}
+cp "${TRAIN_LOGDIR}/checkpoint" ${CHECKPOINT_FINAL_LOGDIR}
 
 echo "Exporting model as a frozen graph"
 cp "${TRAIN_LOGDIR}/model.ckpt-${NUM_ITERATIONS}" CHECKPOINT_FINAL_LOGDIR
@@ -62,7 +80,7 @@ python "${WORK_DIR}"/export_model.py \
   --atrous_rates=18 \
   --output_stride=16 \
   --decoder_output_stride=4 \
-  --num_classes=59 \
+  --num_classes=21 \
   --crop_size=513 \
   --crop_size=513 \
   --inference_scales=1.0

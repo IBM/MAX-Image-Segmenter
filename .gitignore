@@ -115,3 +115,6 @@ ENV/
 *checkpoint
 *.tfevents*
 training/max-image-segmenter-model-building-code.zip
+*.tfrecord
+*.pb
+custom_assets/*
