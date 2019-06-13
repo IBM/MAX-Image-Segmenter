@@ -3,7 +3,7 @@
 Follow the instructions in this document to prepare your data for model training.
 - [Prerequisites](#prerequisites)
 - [Preparing your data](#preparing-your-data)
-- [Using pre trained weights](#adding-pre-trained-weights)
+- [Using pre trained weights](#using-pre-trained-weights)
 
 ## Prerequisites
 
