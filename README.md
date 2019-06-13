@@ -52,7 +52,7 @@ in a Docker container. This repository was developed as part of the [IBM Code Mo
 | This repository | [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0) | [LICENSE](LICENSE) |
 | Model Code (3rd party) | [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0) | [TensorFlow Models Repository](https://github.com/tensorflow/models/blob/master/LICENSE) |
 | Model Weights | [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0) | [TensorFlow Models Repository](https://github.com/tensorflow/models/blob/master/LICENSE) |
-| Test Assets | [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0) | [Asset README](samples/README.md)
+| Test Samples | [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0) | [Asset README](samples/README.md)
 
 
 ## Prerequisites
@@ -158,7 +158,7 @@ _Note_ that the image size parameter controls to what size the image will be res
 The API server automatically generates an interactive Swagger documentation page. Go to `http://localhost:5000` to load
 it. From there you can explore the API and also create test requests.
 
-Use the `model/predict` endpoint to load a test image (you can use one of the test images from the `assets` folder) and
+Use the `model/predict` endpoint to load a test image (you can use one of the test images from the `samples` folder) and
 get predicted segmentation map for the image from the API.
 
 ![pic](/docs/swagger-screenshot.png "Swagger Screenshot")

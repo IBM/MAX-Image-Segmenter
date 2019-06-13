@@ -26,7 +26,7 @@ echo "Initial checkpoint moved succesfully."
 NUM_ITERATIONS=20
 python "${WORK_DIR}"/train.py \
 --logtostderr \
---train_split="trainval" \
+--train_split="train" \
 --model_variant="${MODEL_VARIANT}" \
 --training_number_of_steps="${NUM_ITERATIONS}" \
 --train_logdir="${TRAIN_LOGDIR}" \
@@ -60,30 +60,30 @@ if [ $RETURN_CODE_TRAIN -gt 0 ]; then
   exit $RETURN_CODE_TRAIN
 fi
 
-CKPT_PATH="${TRAIN_LOGDIR}/model.ckpt-${NUM_ITERATIONS}"
+if [ -d ${RESULT_DIR}/model/checkpoint ]; then
+  file_name=$(echo `awk 'FNR <= 1' ${RESULT_DIR}/model/checkpoint/checkpoint |  cut -d ":" -f 2 | tr -d '"'`)
+  echo $file_name
+  epoch_number=`echo $file_name | sed 's/.*-//'`
+  echo $epoch_number
+fi
+
+
+CKPT_PATH="${TRAIN_LOGDIR}/model.ckpt-${epoch_number}"
 CHECKPOINT_FINAL_LOGDIR="${RESULT_DIR}/model/checkpoint/final"
+
 mkdir -p $CHECKPOINT_FINAL_LOGDIR
 cp ${CKPT_PATH}* ${CHECKPOINT_FINAL_LOGDIR}
 cp "${TRAIN_LOGDIR}/checkpoint" ${CHECKPOINT_FINAL_LOGDIR}
 
 echo "Exporting model as a frozen graph"
-cp "${TRAIN_LOGDIR}/model.ckpt-${NUM_ITERATIONS}" CHECKPOINT_FINAL_LOGDIR
+cp "${TRAIN_LOGDIR}/model.ckpt-${epoch_number}" CHECKPOINT_FINAL_LOGDIR
 EXPORT_PATH="${EXPORT_DIR}/frozen_inference_graph_${MODEL_TYPE}.pb"
 
 python "${WORK_DIR}"/export_model.py \
   --logtostderr \
   --checkpoint_path="${CKPT_PATH}" \
   --export_path="${EXPORT_PATH}" \
-  --model_variant="${MODEL_VARIANT}" \
-  --atrous_rates=6 \
-  --atrous_rates=12 \
-  --atrous_rates=18 \
-  --output_stride=16 \
-  --decoder_output_stride=4 \
-  --num_classes=21 \
-  --crop_size=513 \
-  --crop_size=513 \
-  --inference_scales=1.0
+  --model_variant="${MODEL_VARIANT}" 
 
 RETURN_CODE_EXPORT=$?
 echo "Export process complete with return code.. $RETURN_CODE_EXPORT"
