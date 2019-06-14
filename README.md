@@ -233,6 +233,6 @@ then need to rebuild the Docker image (see [step 1](#1-build-the-model)).
 
 To stop the Docker container, type `CTRL` + `C` in your terminal.
 
-## 4. Retrain the Model on Watson Machine Learning
+## Retrain the Model on Watson Machine Learning
 
 Whether fine tuning the model with transfer learning or training from scratch on a custom dataset, retraining the model is a power feature. Please follow the steps listed under the [training readme](training/README.md) to retrain the model on [Watson Machine Learning](https://www.ibm.com/cloud/machine-learning), a deep-learning as a service (DLaaS) offering of [IBM Cloud](https://ibm.biz/Bdz2XM).
