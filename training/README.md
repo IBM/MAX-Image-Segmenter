@@ -9,7 +9,7 @@
 To prepare your data for training complete the steps listed in [data_preparation/README.md](data_preparation/README.md).
 
 
-## Train The Model
+## Train the Model
 
 In this document `$MODEL_REPO_HOME_DIR` refers to the cloned MAX model repository directory, e.g.
 `/users/hi_there/MAX-Image-Segmenter`. 
