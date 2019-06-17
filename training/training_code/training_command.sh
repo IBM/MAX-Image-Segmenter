@@ -1,8 +1,11 @@
-set -x
 # Set up the working environment.
 CURRENT_DIR=$(pwd)
 WORK_DIR="${CURRENT_DIR}/deeplab"
 DATASET_DIR=$DATA_DIR
+
+##########################################################
+# TODO 1: Set Model Type to either `mobile` or `full`    #
+##########################################################
 MODEL_TYPE=mobile
 MODEL_VARIANT=mobilenet_v2
 export PYTHONPATH=$PYTHONPATH:`pwd`:`pwd`/slim
@@ -23,6 +26,10 @@ mkdir -p $TRAIN_LOGDIR
 cp -a "${DATA_DIR}/initial_model/." ${TRAIN_LOGDIR}
 echo "Initial checkpoint moved succesfully."
 
+
+##########################################################
+# TODO 2: Set the number of training iterations          #
+##########################################################
 NUM_ITERATIONS=20
 python "${WORK_DIR}"/train.py \
 --logtostderr \
@@ -33,25 +40,6 @@ python "${WORK_DIR}"/train.py \
 --summary_logdir="${SUMMARY_LOGDIR}" \
 --dataset="pqr" \
 --dataset_dir="${DATASET}"
-
-# NUM_ITERATIONS=20
-# python "${WORK_DIR}"/train.py \
-# --logtostderr \
-# --train_split="train" \
-# --model_variant="${MODEL_VARIANT}" \
-# --atrous_rates=6 \
-# --atrous_rates=12 \
-# --atrous_rates=18 \
-# --output_stride=8 \
-# --decoder_output_stride=4 \
-# --train_crop_size=513 \
-# --train_crop_size=513 \
-# --train_batch_size=4 \
-# --training_number_of_steps="${NUM_ITERATIONS}" \
-# --train_logdir="${TRAIN_LOGDIR}" \
-# --summary_logdir="${SUMMARY_LOGDIR}" \
-# --dataset="pqr" \
-# --dataset_dir="${DATASET}"
 
 RETURN_CODE_TRAIN=$?
 if [ $RETURN_CODE_TRAIN -gt 0 ]; then
