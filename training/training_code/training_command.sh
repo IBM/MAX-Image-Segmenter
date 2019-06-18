@@ -30,7 +30,7 @@ echo "Initial checkpoint moved succesfully."
 ##########################################################
 # TODO 2: Set the number of training iterations          #
 ##########################################################
-NUM_ITERATIONS=20
+NUM_ITERATIONS=100
 python "${WORK_DIR}"/train.py \
 --logtostderr \
 --train_split="train" \

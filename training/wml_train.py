@@ -58,8 +58,10 @@ def process_cmd_parameters():
     """
 
     def display_usage():
+        print('--------------------------------------------------------'
+              '--------------------------------------------')
         print('Train a MAX model using Watson Machine Learning. ')
-        print('\nUsage: {} <training_config_file> [command] \n'
+        print('\nUsage: {} <training_config_file> <command> \n'
               .format(sys.argv[0]))
         print('Valid commands:')
         print('     clean          removes local model training artifacts')
@@ -69,11 +71,24 @@ def process_cmd_parameters():
               ' trains the model')
         print('     package        generates model training artifacts, trains'
               ' the model, and performs post processing')
-        print('\n If no command is specified, "package" is used. ')
+        print('--------------------------------------------------------'
+              '--------------------------------------------')
+        print('\nTo retrieve training status and download log and model '
+              'files.')
+        print('\nUsage: {} <training_config_file> package [training-id]\n'
+              .format(sys.argv[0]))
+        print('Use training id obtained from previously initiated training '
+              'run')
+        print('--------------------------------------------------------'
+              '--------------------------------------------')
 
-    if len(sys.argv) == 1:
+    if len(sys.argv) <= 2:
         display_usage()
         sys.exit(ExitCode.SUCCESS.value)
+
+    if len(sys.argv) > 4:
+        display_usage()
+        sys.exit(ExitCode.INCORRECT_INVOCATION.value)
 
     if os.path.isfile(sys.argv[1]) is False:
         print('Invocation error. "{}" is not a file.'.format(sys.argv[1]))
@@ -82,7 +97,7 @@ def process_cmd_parameters():
 
     cmd_parameters = {
         'config_file': sys.argv[1],
-        'command': 'package'
+        'command': sys.argv[2]
     }
 
     if len(sys.argv) == 2:
@@ -168,248 +183,255 @@ debug('Using the following configuration settings: ', config)
 # Remove existing model training artifacts
 # --------------------------------------------------------
 
-print_banner('Removing temporary work files ...')
-
-for file in [config['model_code_archive']]:
-    if os.path.isfile(file):
-        os.remove(file)
-
-# terminate if the "clean" command was specified
-# when the utility was invoked
-if cmd_parameters['command'] == 'clean':
-    print('Skipping model training.')
-    sys.exit(ExitCode.SUCCESS.value)
-
-# --------------------------------------------------------
-# Verify the Cloud Object Storage configuration:
-#  - the results bucket must exist
-# --------------------------------------------------------
-
-cw = None  # handle for the Cloud Object Storage wrapper
-
-print_banner('Verifying Cloud Object Storage setup ...')
-
-try:
-    # instantiate the Cloud Object Storage wrapper
+if len(sys.argv) == 4:
+    cw = None
     cw = COSWrapper(os.environ['AWS_ACCESS_KEY_ID'],
                     os.environ['AWS_SECRET_ACCESS_KEY'])
+else:
+    print_banner('Removing temporary work files ...')
 
-    print(' Verifying that training results bucket "{}" exists. '
-          ' It will be created if necessary ...'
-          .format(config['results_bucket']))
+    for file in [config['model_code_archive']]:
+        if os.path.isfile(file):
+            os.remove(file)
 
-    # make sure the training results bucket exists;
-    # it can be empty, but doesn't have to be
-    cw.create_bucket(config['results_bucket'],
-                     exist_ok=True)
+    # terminate if the "clean" command was specified
+    # when the utility was invoked
+    if cmd_parameters['command'] == 'clean':
+        print('Skipping model training.')
+        sys.exit(ExitCode.SUCCESS.value)
 
-    print(' Verifying that training data bucket "{}" exists. '
-          ' It will be created if necessary ...'
-          .format(config['training_bucket']))
+    # --------------------------------------------------------
+    # Verify the Cloud Object Storage configuration:
+    #  - the results bucket must exist
+    # --------------------------------------------------------
 
-    # make sure the training data bucket exists;
-    cw.create_bucket(config['training_bucket'],
-                     exist_ok=True)
+    cw = None  # handle for the Cloud Object Storage wrapper
 
-    # if there are any initial_model artifacts in ther training bucket
-    # remove them
-    im_object_list = cw.get_object_list(config['training_bucket'],
-                                        key_name_prefix='initial_model')
+    print_banner('Verifying Cloud Object Storage setup ...')
 
-    if len(im_object_list) > 0:
-        print(' Removing model artifacts from training bucket "{}" ...   '
-              .format(config['training_bucket']))
-        cw.delete_objects(config['training_bucket'], im_object_list)
-
-    # is there training data in the bucket?
-    no_training_data = cw.is_bucket_empty(config['training_bucket'])
-
-    # add initial_model artifacts to bucket
-    if config.get('local_data_dir') and \
-       os.path.isdir(config['local_data_dir']):
-        initial_model_path = os.path.join(config['local_data_dir'],
-                                          'initial_model')
-        print(' Looking for model artifacts in "{}" ... '
-              .format(initial_model_path))
-        for file in glob.iglob(initial_model_path + '/**/*',
-                               recursive=True):
-            if os.path.isfile(file):
-                print(' Uploading model artifact "{}" to '
-                      'training data bucket "{}" ...'
-                      .format(file[len(initial_model_path):].lstrip('/'),
-                              config['training_bucket']))
-                cw.upload_file(file,
-                               config['training_bucket'],
-                               'initial_model',
-                               file[len(initial_model_path):]
-                               .lstrip('/'))
-
-    print(' Looking for training data in bucket "{}" ... '
-          .format(config['training_bucket']))
-
-    # if there's no training data in the training data bucket
-    # upload whatever is found locally
-    if no_training_data:
-        print(' No training data was found.')
-        if config.get('local_data_dir', None) is None:
-            # error. there is no local training data either;
-            # abort processing
-            print('Error. No local training data was found. '
-                  'Please check your configuration settings.')
-            sys.exit(ExitCode.PRE_PROCESSING_FAILED.value)
-        # verify that local_data_dir is a directory
-        if not os.path.isdir(config['local_data_dir']):
-            print('Error. "{}" is not a directory or cannot be accessed.'
-                  .format(config['local_data_dir']))
-            sys.exit(ExitCode.PRE_PROCESSING_FAILED.value)
-
-        # upload training data from the local data directory
-        print(' Looking for training data in "{}" ... '
-              .format(config['local_data_dir']))
-        file_count = 0
-        ignore_list = []
-        ignore_list.append(os.path.join(config['local_data_dir'], 'README.md'))
-        for file in glob.iglob(config['local_data_dir'] + '**/*',
-                               recursive=True):
-            if file in ignore_list or file.startswith(initial_model_path):
-                continue
-            if os.path.isfile(file):
-                print(' Uploading "{}" to training data bucket "{}" ...'
-                      .format(file[len(config['local_data_dir']):]
-                              .lstrip('/'),
-                              config['training_bucket']))
-                cw.upload_file(file,
-                               config['training_bucket'],
-                               config.get('training_data_key_prefix'),
-                               file[len(config['local_data_dir']):]
-                               .lstrip('/'))
-                file_count += 1
-
-        if file_count == 0:
-            print('Error. No local training data was found in "{}".'
-                  .format(config['local_data_dir']))
-            sys.exit(ExitCode.PRE_PROCESSING_FAILED.value)
-        else:
-            print('Uploaded {} data files to training data bucket "{}".'
-                  .format(file_count, config['training_bucket']))
-    else:
-        print(' Found data in training data bucket "{}". Skipping upload.'
-              .format(config['training_bucket']))
-
-except ValueError as ve:
-    print('Error. {}'.format(ve))
-    sys.exit(ExitCode.PRE_PROCESSING_FAILED.value)
-except BucketNotFoundError as bnfe:
-    print('Error. {}'.format(bnfe))
-    sys.exit(ExitCode.PRE_PROCESSING_FAILED.value)
-except FileNotFoundError as fnfe:
-    print('Error. {}'.format(fnfe))
-    sys.exit(ExitCode.PRE_PROCESSING_FAILED.value)
-except COSWrapperError as cwe:
-    print('Error. Cloud Object Storage preparation failed: {}'.format(cwe))
-    sys.exit(ExitCode.PRE_PROCESSING_FAILED.value)
-
-# --------------------------------------------------------
-# Create model building ZIP
-# --------------------------------------------------------
-
-print_banner('Locating model building files ...')
-
-#
-# 1. Assure that the model building directory config['model_building_code_dir']
-#   exists
-# 2. If there are no files in config['model_building_code_dir']:
-#   - determine whether model-building code is stored in a COS bucket
-#   - download model-building code to config['model_building_code_dir']
-# 3. ZIP files in config['model_building_code_dir']
-
-try:
-    # task 1: make sure the specified model building code directory exists
-    os.makedirs(config['model_building_code_dir'], exist_ok=True)
-except Exception as ex:
-    print(str(type(ex)))
-    print('Error. Model building code preparation failed: {}'.format(ex))
-    sys.exit(ExitCode.PRE_PROCESSING_FAILED.value)
-
-if len(os.listdir(config['model_building_code_dir'])) == 0:
-    # Task 2: try to download model building code from Cloud Object Storage
-    #  bucket
-    #
-    print('No model building code was found in "{}".'
-          .format(config['model_building_code_dir']))
     try:
-        if config.get('model_bucket') is None or \
-           cw.is_bucket_empty(config['model_bucket'],
-                              config.get('model_key_prefix')):
-            print('Error. Model building code preparation failed: '
-                  'No source code was found locally in "{}" or '
-                  ' in Cloud Object Storage.'
-                  .format(config['model_building_code_dir']))
-            sys.exit(ExitCode.PRE_PROCESSING_FAILED.value)
+        # instantiate the Cloud Object Storage wrapper
+        cw = COSWrapper(os.environ['AWS_ACCESS_KEY_ID'],
+                        os.environ['AWS_SECRET_ACCESS_KEY'])
 
-        print('Found model building code in bucket "{}".'
-              .format(config['model_bucket']))
+        print(' Verifying that training results bucket "{}" exists. '
+              ' It will be created if necessary ...'
+              .format(config['results_bucket']))
 
-        for object_key in cw.get_object_list(config['model_bucket'],
-                                             config.get('model_key_prefix')):
-            cw.download_file(config['model_bucket'],
-                             object_key,
-                             config['model_building_code_dir'])
+        # make sure the training results bucket exists;
+        # it can be empty, but doesn't have to be
+        cw.create_bucket(config['results_bucket'],
+                         exist_ok=True)
+
+        print(' Verifying that training data bucket "{}" exists. '
+              ' It will be created if necessary ...'
+              .format(config['training_bucket']))
+
+        # make sure the training data bucket exists;
+        cw.create_bucket(config['training_bucket'],
+                         exist_ok=True)
+
+        # if there are any initial_model artifacts in ther training bucket
+        # remove them
+        im_object_list = cw.get_object_list(config['training_bucket'],
+                                            key_name_prefix='initial_model')
+
+        if len(im_object_list) > 0:
+            print(' Removing model artifacts from training bucket "{}" ...   '
+                  .format(config['training_bucket']))
+            cw.delete_objects(config['training_bucket'], im_object_list)
+
+        # is there training data in the bucket?
+        no_training_data = cw.is_bucket_empty(config['training_bucket'])
+
+        # add initial_model artifacts to bucket
+        if config.get('local_data_dir') and \
+                os.path.isdir(config['local_data_dir']):
+            initial_model_path = os.path.join(config['local_data_dir'],
+                                              'initial_model')
+            print(' Looking for model artifacts in "{}" ... '
+                  .format(initial_model_path))
+            for file in glob.iglob(initial_model_path + '/**/*',
+                                   recursive=True):
+                if os.path.isfile(file):
+                    print(' Uploading model artifact "{}" to '
+                          'training data bucket "{}" ...'
+                          .format(file[len(initial_model_path):].lstrip('/'),
+                                  config['training_bucket']))
+                    cw.upload_file(file,
+                                   config['training_bucket'],
+                                   'initial_model',
+                                   file[len(initial_model_path):]
+                                   .lstrip('/'))
+
+        print(' Looking for training data in bucket "{}" ... '
+              .format(config['training_bucket']))
+
+        # if there's no training data in the training data bucket
+        # upload whatever is found locally
+        if no_training_data:
+            print(' No training data was found.')
+            if config.get('local_data_dir', None) is None:
+                # error. there is no local training data either;
+                # abort processing
+                print('Error. No local training data was found. '
+                      'Please check your configuration settings.')
+                sys.exit(ExitCode.PRE_PROCESSING_FAILED.value)
+            # verify that local_data_dir is a directory
+            if not os.path.isdir(config['local_data_dir']):
+                print('Error. "{}" is not a directory or cannot be accessed.'
+                      .format(config['local_data_dir']))
+                sys.exit(ExitCode.PRE_PROCESSING_FAILED.value)
+
+            # upload training data from the local data directory
+            print(' Looking for training data in "{}" ... '
+                  .format(config['local_data_dir']))
+            file_count = 0
+            ignore_list = []
+            ignore_list.append(os.path.join(config['local_data_dir'],
+                                            'README.md'))
+            for file in glob.iglob(config['local_data_dir'] + '**/*',
+                                   recursive=True):
+                if file in ignore_list or file.startswith(initial_model_path):
+                    continue
+                if os.path.isfile(file):
+                    print(' Uploading "{}" to training data bucket "{}" ...'
+                          .format(file[len(config['local_data_dir']):]
+                                  .lstrip('/'),
+                                  config['training_bucket']))
+                    cw.upload_file(file,
+                                   config['training_bucket'],
+                                   config.get('training_data_key_prefix'),
+                                   file[len(config['local_data_dir']):]
+                                   .lstrip('/'))
+                    file_count += 1
+
+            if file_count == 0:
+                print('Error. No local training data was found in "{}".'
+                      .format(config['local_data_dir']))
+                sys.exit(ExitCode.PRE_PROCESSING_FAILED.value)
+            else:
+                print('Uploaded {} data files to training data bucket "{}".'
+                      .format(file_count, config['training_bucket']))
+        else:
+            print(' Found data in training data bucket "{}". Skipping upload.'
+                  .format(config['training_bucket']))
+
+    except ValueError as ve:
+        print('Error. {}'.format(ve))
+        sys.exit(ExitCode.PRE_PROCESSING_FAILED.value)
     except BucketNotFoundError as bnfe:
         print('Error. {}'.format(bnfe))
         sys.exit(ExitCode.PRE_PROCESSING_FAILED.value)
+    except FileNotFoundError as fnfe:
+        print('Error. {}'.format(fnfe))
+        sys.exit(ExitCode.PRE_PROCESSING_FAILED.value)
     except COSWrapperError as cwe:
-        print('Error. {}'.format(cwe))
+        print('Error. Cloud Object Storage preparation failed: {}'.format(cwe))
         sys.exit(ExitCode.PRE_PROCESSING_FAILED.value)
+
+    # --------------------------------------------------------
+    # Create model building ZIP
+    # --------------------------------------------------------
+
+    print_banner('Locating model building files ...')
+
+    #
+    # 1. Assure that the model building directory
+    # config['model_building_code_dir'] exists
+    # 2. If there are no files in config['model_building_code_dir']:
+    #   - determine whether model-building code is stored in a COS bucket
+    #   - download model-building code to config['model_building_code_dir']
+    # 3. ZIP files in config['model_building_code_dir']
+
+    try:
+        # task 1: make sure the specified model building code directory exists
+        os.makedirs(config['model_building_code_dir'], exist_ok=True)
     except Exception as ex:
-        print(str(ex))
+        print(str(type(ex)))
+        print('Error. Model building code preparation failed: {}'.format(ex))
         sys.exit(ExitCode.PRE_PROCESSING_FAILED.value)
 
-print_banner('Packaging model building files in "{}" ...'
-             .format(config['model_building_code_dir']))
+    if len(os.listdir(config['model_building_code_dir'])) == 0:
+        # Task 2: try to download model building code from Cloud Object Storage
+        #  bucket
+        #
+        print('No model building code was found in "{}".'
+              .format(config['model_building_code_dir']))
+        try:
+            if config.get('model_bucket') is None or \
+                    cw.is_bucket_empty(config['model_bucket'],
+                                       config.get('model_key_prefix')):
+                print('Error. Model building code preparation failed: '
+                      'No source code was found locally in "{}" or '
+                      ' in Cloud Object Storage.'
+                      .format(config['model_building_code_dir']))
+                sys.exit(ExitCode.PRE_PROCESSING_FAILED.value)
 
-try:
-    shutil.make_archive(re.sub('.zip$', '', config['model_code_archive']),
-                        'zip',
-                        config['model_building_code_dir'])
-except Exception as ex:
-    print('Error. Packaging failed: {}'.format(str(ex)))
-    sys.exit(ExitCode.PRE_PROCESSING_FAILED.value)
+            print('Found model building code in bucket "{}".'
+                  .format(config['model_bucket']))
 
-if os.path.isfile(config['model_code_archive']):
-    # display archive content
-    print('Model building package "{}" contains the following entries:'
-          .format(config['model_code_archive']))
-    with ZipFile(config['model_code_archive'], 'r') as archive:
-        for entry in sorted(archive.namelist()):
-            print(' {}'.format(entry))
+            for object_key in cw.get_object_list(config['model_bucket'],
+                                                 config.get(
+                                                     'model_key_prefix')):
+                cw.download_file(config['model_bucket'],
+                                 object_key,
+                                 config['model_building_code_dir'])
+        except BucketNotFoundError as bnfe:
+            print('Error. {}'.format(bnfe))
+            sys.exit(ExitCode.PRE_PROCESSING_FAILED.value)
+        except COSWrapperError as cwe:
+            print('Error. {}'.format(cwe))
+            sys.exit(ExitCode.PRE_PROCESSING_FAILED.value)
+        except Exception as ex:
+            print(str(ex))
+            sys.exit(ExitCode.PRE_PROCESSING_FAILED.value)
 
-    # check archive size; WML limits size to 4MB
-    archive_size = os.path.getsize(config['model_code_archive'])
-    archive_size_limit = 1024 * 1024 * 4
-    if archive_size > archive_size_limit:
-        print('Error. Your model building code archive "{}" is too large '
-              '({:.2f} MB). WLM rejects archives larger than {} MB. Please '
-              'remove unnecessary files from the "{}" directory and try again.'
-              .format(config['model_code_archive'],
-                      archive_size/(1024*1024),
-                      archive_size_limit/(1024*1024),
-                      config['model_building_code_dir']))
+    print_banner('Packaging model building files in "{}" ...'
+                 .format(config['model_building_code_dir']))
+
+    try:
+        shutil.make_archive(re.sub('.zip$', '', config['model_code_archive']),
+                            'zip',
+                            config['model_building_code_dir'])
+    except Exception as ex:
+        print('Error. Packaging failed: {}'.format(str(ex)))
         sys.exit(ExitCode.PRE_PROCESSING_FAILED.value)
 
+    if os.path.isfile(config['model_code_archive']):
+        # display archive content
+        print('Model building package "{}" contains the following entries:'
+              .format(config['model_code_archive']))
+        with ZipFile(config['model_code_archive'], 'r') as archive:
+            for entry in sorted(archive.namelist()):
+                print(' {}'.format(entry))
 
-# Status:
-#  - The model training job can now be started.
+        # check archive size; WML limits size to 4MB
+        archive_size = os.path.getsize(config['model_code_archive'])
+        archive_size_limit = 1024 * 1024 * 4
+        if archive_size > archive_size_limit:
+            print('Error. Your model building code archive "{}" is too large '
+                  '({:.2f} MB). WLM rejects archives larger than {} MB. '
+                  'Please remove unnecessary files from the "{}" directory '
+                  'and try again.'
+                  .format(config['model_code_archive'],
+                          archive_size / (1024 * 1024),
+                          archive_size_limit / (1024 * 1024),
+                          config['model_building_code_dir']))
+            sys.exit(ExitCode.PRE_PROCESSING_FAILED.value)
 
-if cmd_parameters['command'] == 'prepare':
-    print('Skipping model training and post processing steps.')
-    sys.exit(ExitCode.SUCCESS.value)
+    # Status:
+    #  - The model training job can now be started.
 
-# --------------------------------------------------------
-# Start model training
-# --------------------------------------------------------
+    if cmd_parameters['command'] == 'prepare':
+        print('Skipping model training and post processing steps.')
+        sys.exit(ExitCode.SUCCESS.value)
 
-print_banner('Starting model training ...')
+    # ---------------------------------------------------------
+    # Start model training
+    # --------------------------------------------------------
+
+    print_banner('Starting model training ...')
 
 client = WatsonMachineLearningAPIClient(
     {
@@ -479,17 +501,20 @@ print(' Training data bucket  : {}'.format(config['training_bucket']))
 print(' Results bucket        : {}'.format(config['results_bucket']))
 print(' Model-building archive: {}'.format(config['model_code_archive']))
 
-training_guid = None
+if len(sys.argv) == 4:
+    training_guid = sys.argv[3]
+else:
+    training_guid = None
 
-try:
-    training_guid = w.start_training(config['model_code_archive'],
-                                     model_definition_metadata,
-                                     training_configuration_metadata)
-except Exception as ex:
-    print('Error. Model training could not be started: {}'.format(ex))
-    sys.exit(ExitCode.TRAINING_FAILED.value)
+    try:
+        training_guid = w.start_training(config['model_code_archive'],
+                                         model_definition_metadata,
+                                         training_configuration_metadata)
+    except Exception as ex:
+        print('Error. Model training could not be started: {}'.format(ex))
+        sys.exit(ExitCode.TRAINING_FAILED.value)
 
-print('Model training was started. Training id: {}'.format(training_guid))
+    print('Model training was started. Training id: {}'.format(training_guid))
 
 # --------------------------------------------------------
 # Monitor the training run until it completes

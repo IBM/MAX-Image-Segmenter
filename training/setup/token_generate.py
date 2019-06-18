@@ -9,7 +9,8 @@ class TokenGenerate:
     1. Prompt user to enter API Key JSON file.
        1.1 Check if the input path is a file, if not prompt again.
        1.2 Check if the input file is in JSON format, if not prompt again.
-       1.3 Check if the input JSON file has `apikey` as one of its keys, if not prompt again.
+       1.3 Check if the input JSON file has `apikey`
+       as one of its keys, if not prompt again.
     2. Generate IAM access token key.
     3. Exit for any error in key generation.
     4. Return IAM Access Token
@@ -17,7 +18,8 @@ class TokenGenerate:
 
     def __init__(self):
 
-        self.prompt = "[PROMPT] Enter IBM Cloud API KEY JSON file location: "
+        self.prompt = "[PROMPT] Enter IBM Cloud API KEY " \
+                      "JSON file location: "
 
     @staticmethod
     def generate_token(api_key_value):
@@ -35,7 +37,9 @@ class TokenGenerate:
             "grant_type": "urn:ibm:params:oauth:grant-type:apikey",
             "apikey": api_key_value,
         }
-        key_response = requests.post("https://iam.cloud.ibm.com/identity/token", headers=headers_iam, data=data)
+        key_response = requests.post("https://iam.cloud.ibm.com"
+                                     "/identity/token", headers=headers_iam,
+                                     data=data)
         if key_response.status_code == 200:
             # Storing access token
             key_response = key_response.json()
@@ -43,13 +47,15 @@ class TokenGenerate:
             return iam_access_token
         else:
             print("[MESSAGE] !!! IAM Access Token creation failed !!! ")
-            print("[MESSAGE] Failing with status code:", key_response.status_code)
+            print("[MESSAGE] Failing with status code:",
+                  key_response.status_code)
             print("[MESSAGE] Reason for failure:", key_response.reason)
             sys.exit()
 
     def get_api_location(self):
         """
-        This function get cloud API key json file name from user and calls token generating function.
+        This function get cloud API key json file name from user
+        and calls token generating function.
         :return: iam access token
         """
         while True:
@@ -65,14 +71,14 @@ class TokenGenerate:
                         json_file_load = json.load(keyfile)
                         api_key_value = json_file_load["apiKey"],
                         iam_display = """
-                  *------------------------------------------------------------------------------------------*
-                  |                                                                                          |
-                  |           IBM Cloud API Key JSON file loaded. Now generating IAM Access Token.           |
-                  |                                                                                          |
-                  |     The IBM Cloud IAM Token Service allows you to create, update, delete and use         |
-                  |     API keys for users and services.                                                     | 
-                  |                                                                                          |
-                  *------------------------------------------------------------------------------------------*
+*----------------------------------------------------------------------------*
+|                                                                            |
+| IBM Cloud API Key JSON file loaded. Now generating IAM Access Token.       |
+|                                                                            |
+|     The IBM Cloud IAM Token Service allows you to create, update, delete   |
+|     and use API keys for users and services.                               |
+|                                                                            |
+*----------------------------------------------------------------------------*
                         """
                         print(iam_display)
                         iam_access_token = self.generate_token(api_key_value)
