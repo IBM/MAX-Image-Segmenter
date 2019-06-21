@@ -118,3 +118,4 @@ training/max-image-segmenter-model-building-code.zip
 *.tfrecord
 *.pb
 custom_assets/*
+!docs/*.png
