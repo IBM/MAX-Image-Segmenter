@@ -1,4 +1,5 @@
-[![Build Status](https://travis-ci.org/IBM/MAX-Image-Segmenter.svg?branch=master)](https://travis-ci.org/IBM/MAX-Image-Segmenter) [![Website Status](https://img.shields.io/website/http/max-image-segmenter.max.us-south.containers.appdomain.cloud/swagger.json.svg?label=api+demo)](http://max-image-segmenter.max.us-south.containers.appdomain.cloud/)  [<img src="docs/deploy-max-to-ibm-cloud-with-kubernetes-button.png" width="400px">](http://ibm.biz/max-to-ibm-cloud-tutorial) 
+[![Build Status](https://travis-ci.org/IBM/MAX-Image-Segmenter.svg?branch=master)](https://travis-ci.org/IBM/MAX-Image-Segmenter) [![Website Status](https://img.shields.io/website/http/max-image-segmenter.max.us-south.containers.appdomain.cloud/swagger.json.svg?label=api+demo)](http://max-image-segmenter.max.us-south.containers.appdomain.cloud/)  
+[<img src="docs/deploy-max-to-ibm-cloud-with-kubernetes-button.png" width="400px">](http://ibm.biz/max-to-ibm-cloud-tutorial) 
 
 # IBM Developer Model Asset Exchange: Image Segmentation
 
