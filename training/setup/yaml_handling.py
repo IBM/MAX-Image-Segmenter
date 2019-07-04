@@ -1,18 +1,3 @@
-# Copyright 2018-2019 IBM Corp. All Rights Reserved.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-# 
-
 import sys
 from utils.cos import COSWrapper
 import glob
@@ -23,7 +8,8 @@ import getch
 class YAMLHandler:
 
     def __init__(self, cfg_inp_bucket, cfg_out_bucket, cfg_loc_path,
-                 cfg_cmp_config, access_key, secret_access_key):
+                 cfg_cmp_config, access_key, secret_access_key,
+                 cfg_key_prefix):
         assert access_key is not None, \
             'Parameter access key cannot be None'
         assert secret_access_key is not None, \
@@ -34,6 +20,7 @@ class YAMLHandler:
         self.cfg_cmp_config = cfg_cmp_config
         self.access_key = access_key
         self.secret_access_key = secret_access_key
+        self.cfg_key_prefix = cfg_key_prefix
         self.cos = COSWrapper(self.access_key, self.secret_access_key)
 
     def data_upload(self, bucket_name, path):
@@ -47,13 +34,18 @@ class YAMLHandler:
         `False` if file upload fails.
         """
         file_count = 0
+        if (self.cfg_key_prefix != '' or self.cfg_key_prefix
+                is not None):
+            key_prefix = self.cfg_key_prefix
+        else:
+            key_prefix = None
         for file in glob.iglob(path + '**/*', recursive=True):
             if os.path.isfile(file):
                 print(' [MESSAGE] Uploading "{}" to training data bucket '
                       '"{}" ...'.format(file, bucket_name))
                 self.cos.upload_file(file,
                                      bucket_name,
-                                     None,
+                                     key_prefix,
                                      file[len(path):]
                                      .lstrip('/'))
                 file_count += 1

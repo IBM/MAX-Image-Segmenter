@@ -263,10 +263,12 @@ class COSWrapper:
             key_name_prefix = ''
 
         try:
-            return not any(True for _ in
-                           self.cos.Bucket(bucket_name)
-                               .objects.filter(MaxKeys=1,
-                                               Prefix=key_name_prefix))
+            is_empty = not any(True for _ in
+                               self.cos.Bucket(bucket_name)
+                                   .objects.filter(MaxKeys=1,
+                                                   Prefix=key_name_prefix))
+            debug('is_bucket_empty returns {}'.format(is_empty))
+            return(is_empty)
         except ClientError as ce:
             debug('Exception type: {}'.format(type(ce)))
             debug('Exception: {}'.format(ce))
@@ -319,6 +321,8 @@ class COSWrapper:
                               .objects.filter(Prefix=key_name_prefix):
                 # contains two properties: bucket_name and key
                 object_list.append(object.key)
+            debug('get_object_list returns {} object keys.'
+                  .format(len(object_list)))
             return object_list
 
         except ClientError as ce:

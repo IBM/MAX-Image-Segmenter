@@ -1,18 +1,4 @@
 #!/usr/bin/env python
-# Copyright 2018-2019 IBM Corp. All Rights Reserved.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-# 
 
 import glob
 import os
@@ -23,12 +9,11 @@ import tarfile
 import time
 from enum import Enum
 from zipfile import ZipFile
-from watson_machine_learning_client import WatsonMachineLearningAPIClient
 
 from utils.debug import debug
 from utils.os_util import copy_dir
 from utils.config import YAMLReader, ConfigParseError, ConfigurationError
-from utils.wml import WMLWrapper
+from utils.wml import WMLWrapper, WMLWrapperError
 from utils.cos import COSWrapper, COSWrapperError, BucketNotFoundError
 
 
@@ -78,55 +63,54 @@ def process_cmd_parameters():
         print('\nUsage: {} <training_config_file> <command> \n'
               .format(sys.argv[0]))
         print('Valid commands:')
-        print('     clean          removes local model training artifacts')
-        print('     prepare        generates model training artifacts'
-              ' but skips model training')
-        print('     train          generates model training artifacts and'
-              ' trains the model')
-        print('     package        generates model training artifacts, trains'
-              ' the model, and performs post processing')
-        print('--------------------------------------------------------'
-              '--------------------------------------------')
-        print('\nTo retrieve training status and download log and model '
-              'files.')
-        print('\nUsage: {} <training_config_file> package [training-id]\n'
-              .format(sys.argv[0]))
-        print('Use training id obtained from previously initiated training '
-              'run')
+        print('     clean                 '
+              'removes local model training artifacts')
+        print('     prepare               '
+              'generates model training artifacts but skips model training')
+        print('     train                 '
+              'generates model training artifacts and trains the model')
+        print('     package               '
+              'generates model training artifacts, trains the model, and '
+              'performs post processing')
+        print('     package <training_id> '
+              'monitors the training status and performs post processing')
         print('--------------------------------------------------------'
               '--------------------------------------------')
 
-    if len(sys.argv) <= 2:
+    if len(sys.argv) <= 1:
+        # no arguments were provided; display usage information
         display_usage()
         sys.exit(ExitCode.SUCCESS.value)
-
-    if len(sys.argv) > 4:
-        display_usage()
-        sys.exit(ExitCode.INCORRECT_INVOCATION.value)
 
     if os.path.isfile(sys.argv[1]) is False:
         print('Invocation error. "{}" is not a file.'.format(sys.argv[1]))
         display_usage()
         sys.exit(ExitCode.INCORRECT_INVOCATION.value)
 
+    if len(sys.argv) < 3:
+        print('Invocation error. You must specify a command.')
+        display_usage()
+        sys.exit(ExitCode.INCORRECT_INVOCATION.value)
+
     cmd_parameters = {
         'config_file': sys.argv[1],
-        'command': sys.argv[2]
+        'command': sys.argv[2].strip().lower(),
+        'training_id': None
     }
 
-    if len(sys.argv) == 2:
-        cmd_parameters['config_file'] = sys.argv[1]
-    else:
-        if sys.argv[2].lower() in ['clean',
-                                   'prepare',
-                                   'train',
-                                   'package']:
-            cmd_parameters['command'] = sys.argv[2].lower()
-        else:
-            print('Invocation error. "{}" is not a valid command.'
-                  .format(sys.argv[2]))
-            display_usage()
-            sys.exit(ExitCode.INCORRECT_INVOCATION.value)
+    if cmd_parameters['command'] not in ['clean',
+                                         'prepare',
+                                         'train',
+                                         'package']:
+        print('Invocation error. "{}" is not a valid command.'
+              .format(sys.argv[2]))
+        display_usage()
+        sys.exit(ExitCode.INCORRECT_INVOCATION.value)
+
+    if cmd_parameters['command'] == 'package':
+        # package accepts as optional parameter an existing training id
+        if len(sys.argv) == 4:
+            cmd_parameters['training_id'] = sys.argv[3]
 
     return cmd_parameters
 
@@ -193,15 +177,46 @@ except FileNotFoundError:
 
 debug('Using the following configuration settings: ', config)
 
-# --------------------------------------------------------
-# Remove existing model training artifacts
-# --------------------------------------------------------
+cw = None  # COS wrapper handle
+w = None   # WML wrapper handle
+training_guid = cmd_parameters.get('training_id', None)
 
-if len(sys.argv) == 4:
-    cw = None
-    cw = COSWrapper(os.environ['AWS_ACCESS_KEY_ID'],
-                    os.environ['AWS_SECRET_ACCESS_KEY'])
+if cmd_parameters['command'] == 'package' and training_guid is not None:
+    # monitor status of an existing training run; skip preparation steps
+    try:
+        # instantiate Cloud Object Storage wrapper
+        cw = COSWrapper(os.environ['AWS_ACCESS_KEY_ID'],
+                        os.environ['AWS_SECRET_ACCESS_KEY'])
+    except COSWrapperError as cwe:
+        print('Error. Cloud Object Storage preparation failed: {}'.format(cwe))
+        sys.exit(ExitCode.PRE_PROCESSING_FAILED.value)
+
+    print_banner('Verifying that "{}" is a valid training id...'
+                 .format(training_guid))
+
+    try:
+        # instantiate Watson Machine Learning wrapper
+        w = WMLWrapper(os.environ['ML_ENV'],
+                       os.environ['ML_USERNAME'],
+                       os.environ['ML_PASSWORD'],
+                       os.environ['ML_INSTANCE'])
+
+        # verify that the provided training id is valid
+        if not w.is_known_training_id(training_guid):
+            print('Error. "{}" is an unknown training id.'
+                  .format(training_guid))
+            sys.exit(ExitCode.INCORRECT_INVOCATION.value)
+    except WMLWrapperError as wmle:
+        print(wmle)
+        sys.exit(ExitCode.PRE_PROCESSING_FAILED.value)
+    except Exception as ex:
+        print(' Exception type: {}'.format(type(ex)))
+        print(' Exception: {}'.format(ex))
+        sys.exit(ExitCode.PRE_PROCESSING_FAILED.value)
 else:
+    # --------------------------------------------------------
+    # Remove existing model training artifacts
+    # --------------------------------------------------------
     print_banner('Removing temporary work files ...')
 
     for file in [config['model_code_archive']]:
@@ -218,8 +233,6 @@ else:
     # Verify the Cloud Object Storage configuration:
     #  - the results bucket must exist
     # --------------------------------------------------------
-
-    cw = None  # handle for the Cloud Object Storage wrapper
 
     print_banner('Verifying Cloud Object Storage setup ...')
 
@@ -362,7 +375,7 @@ else:
         # task 1: make sure the specified model building code directory exists
         os.makedirs(config['model_building_code_dir'], exist_ok=True)
     except Exception as ex:
-        print(str(type(ex)))
+        debug(' Exception type: {}'.format(type(ex)))
         print('Error. Model building code preparation failed: {}'.format(ex))
         sys.exit(ExitCode.PRE_PROCESSING_FAILED.value)
 
@@ -398,7 +411,8 @@ else:
             print('Error. {}'.format(cwe))
             sys.exit(ExitCode.PRE_PROCESSING_FAILED.value)
         except Exception as ex:
-            print(str(ex))
+            debug(' Exception type: {}'.format(type(ex)))
+            print('Error. {}'.format(ex))
             sys.exit(ExitCode.PRE_PROCESSING_FAILED.value)
 
     print_banner('Packaging model building files in "{}" ...'
@@ -447,78 +461,76 @@ else:
 
     print_banner('Starting model training ...')
 
-client = WatsonMachineLearningAPIClient(
-    {
-        'url': os.environ['ML_ENV'],
-        'username': os.environ['ML_USERNAME'],
-        'password': os.environ['ML_PASSWORD'],
-        'instance_id': os.environ['ML_INSTANCE']
-    })
+    try:
+        # instantiate the WML client
+        w = WMLWrapper(os.environ['ML_ENV'],
+                       os.environ['ML_USERNAME'],
+                       os.environ['ML_PASSWORD'],
+                       os.environ['ML_INSTANCE'])
+    except WMLWrapperError as wmle:
+        print(wmle)
+        sys.exit(ExitCode.PRE_PROCESSING_FAILED.value)
 
-model_definition_metadata = {
-    client.repository.DefinitionMetaNames.NAME:
-        config['training_run_name'],
-    client.repository.DefinitionMetaNames.DESCRIPTION:
-        config['training_run_description'],
-    client.repository.DefinitionMetaNames.AUTHOR_NAME:
-        config['author_name'],
-    client.repository.DefinitionMetaNames.FRAMEWORK_NAME:
-        config['framework_name'],
-    client.repository.DefinitionMetaNames.FRAMEWORK_VERSION:
-        config['framework_version'],
-    client.repository.DefinitionMetaNames.RUNTIME_NAME:
-        config['runtime_name'],
-    client.repository.DefinitionMetaNames.RUNTIME_VERSION:
-        config['runtime_version'],
-    client.repository.DefinitionMetaNames.EXECUTION_COMMAND:
-        config['training_run_execution_command']
-}
+    # define training metadata
+    model_definition_metadata = {
+        w.get_client().repository.DefinitionMetaNames.NAME:
+            config['training_run_name'],
+        w.get_client().repository.DefinitionMetaNames.DESCRIPTION:
+            config['training_run_description'],
+        w.get_client().repository.DefinitionMetaNames.AUTHOR_NAME:
+            config['author_name'],
+        w.get_client().repository.DefinitionMetaNames.FRAMEWORK_NAME:
+            config['framework_name'],
+        w.get_client().repository.DefinitionMetaNames.FRAMEWORK_VERSION:
+            config['framework_version'],
+        w.get_client().repository.DefinitionMetaNames.RUNTIME_NAME:
+            config['runtime_name'],
+        w.get_client().repository.DefinitionMetaNames.RUNTIME_VERSION:
+            config['runtime_version'],
+        w.get_client().repository.DefinitionMetaNames.EXECUTION_COMMAND:
+            config['training_run_execution_command']
+    }
 
-training_configuration_metadata = {
-    client.training.ConfigurationMetaNames.NAME:
-        config['training_run_name'],
-    client.training.ConfigurationMetaNames.AUTHOR_NAME:
-        config['author_name'],
-    client.training.ConfigurationMetaNames.DESCRIPTION:
-        config['training_run_description'],
-    client.training.ConfigurationMetaNames.COMPUTE_CONFIGURATION:
-        {'name': config['training_run_compute_configuration_name']},
-    client.training.ConfigurationMetaNames.TRAINING_DATA_REFERENCE: {
-            'connection': {
-                'endpoint_url': config['cos_endpoint_url'],
-                'access_key_id': os.environ['AWS_ACCESS_KEY_ID'],
-                'secret_access_key': os.environ['AWS_SECRET_ACCESS_KEY']
+    training_configuration_metadata = {
+        w.get_client().training.ConfigurationMetaNames.NAME:
+            config['training_run_name'],
+        w.get_client().training.ConfigurationMetaNames.AUTHOR_NAME:
+            config['author_name'],
+        w.get_client().training.ConfigurationMetaNames.DESCRIPTION:
+            config['training_run_description'],
+        w.get_client().training.ConfigurationMetaNames.COMPUTE_CONFIGURATION:
+            {'name': config['training_run_compute_configuration_name']},
+        w.get_client().training.ConfigurationMetaNames
+         .TRAINING_DATA_REFERENCE: {
+                'connection': {
+                    'endpoint_url': config['cos_endpoint_url'],
+                    'access_key_id': os.environ['AWS_ACCESS_KEY_ID'],
+                    'secret_access_key': os.environ['AWS_SECRET_ACCESS_KEY']
+                },
+                'source': {
+                    'bucket': config['training_bucket'],
+                },
+                'type': 's3'
             },
-            'source': {
-                'bucket': config['training_bucket'],
-            },
-            'type': 's3'
-        },
-    client.training.ConfigurationMetaNames.TRAINING_RESULTS_REFERENCE: {
-            'connection': {
-                'endpoint_url': config['cos_endpoint_url'],
-                'access_key_id': os.environ['AWS_ACCESS_KEY_ID'],
-                'secret_access_key': os.environ['AWS_SECRET_ACCESS_KEY']
-            },
-            'target': {
-                'bucket': config['results_bucket'],
-            },
-            'type': 's3'
-        }
-}
+        w.get_client().training.ConfigurationMetaNames
+         .TRAINING_RESULTS_REFERENCE: {
+                'connection': {
+                    'endpoint_url': config['cos_endpoint_url'],
+                    'access_key_id': os.environ['AWS_ACCESS_KEY_ID'],
+                    'secret_access_key': os.environ['AWS_SECRET_ACCESS_KEY']
+                },
+                'target': {
+                    'bucket': config['results_bucket'],
+                },
+                'type': 's3'
+            }
+    }
 
-w = WMLWrapper(client)
-
-print('Training configuration summary:')
-print(' Training run name     : {}'.format(config['training_run_name']))
-print(' Training data bucket  : {}'.format(config['training_bucket']))
-print(' Results bucket        : {}'.format(config['results_bucket']))
-print(' Model-building archive: {}'.format(config['model_code_archive']))
-
-if len(sys.argv) == 4:
-    training_guid = sys.argv[3]
-else:
-    training_guid = None
+    print('Training configuration summary:')
+    print(' Training run name     : {}'.format(config['training_run_name']))
+    print(' Training data bucket  : {}'.format(config['training_bucket']))
+    print(' Results bucket        : {}'.format(config['results_bucket']))
+    print(' Model-building archive: {}'.format(config['model_code_archive']))
 
     try:
         training_guid = w.start_training(config['model_code_archive'],
@@ -570,6 +582,11 @@ try:
             training_in_progress = False
         else:
             time.sleep(int(config['training_progress_monitoring_interval']))
+except KeyboardInterrupt:
+    print('Monitoring was stoppped, but model training will continue.')
+    print('To resume monitoring, run "python {} {} {} {}"'
+          .format(sys.argv[0], sys.argv[1], 'package', training_guid))
+    sys.exit(ExitCode.TRAINING_FAILED.value)
 except Exception as ex:
     print('Error. Model training monitoring failed with an exception:')
     debug(' Exception type: {}'.format(type(ex)))

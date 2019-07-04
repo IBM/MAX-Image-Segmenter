@@ -42,8 +42,4 @@ MODEL_META_DATA = {
 }
 
 _FULL_MODEL_PATH = "assets/frozen_inference_graph_full.pb"
-_MOBILE_MODEL_PATH = "assets/frozen_inference_graph_mobile.pb" 
-
-from tensorflow import image
-
-a = image.adjust_brightness()
+_MOBILE_MODEL_PATH = "assets/frozen_inference_graph_mobile.pb"

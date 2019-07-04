@@ -1,18 +1,3 @@
-# Copyright 2018-2019 IBM Corp. All Rights Reserved.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-# 
-
 import os
 import sys
 import ruamel.yaml
@@ -51,12 +36,14 @@ if len(sys.argv) == 2:
             config = yaml.load(open(file_name))
             assert ("bucket" in config['train'][
                 'data_source']['training_data'])
-            assert("bucket" in config['train'][
+            assert ("bucket" in config['train'][
                 'model_training_results']['trained_model'])
-            assert("path" in config['train'][
+            assert ("path" in config['train'][
                 'data_source']['training_data_local'])
-            assert("name" in config['train'][
+            assert ("name" in config['train'][
                 'execution']['compute_configuration'])
+            assert ("path" in config['train']['data_source'][
+                'training_data'])
     except Exception as e:
         print("Exception is: ", e)
         print("[DEBUG] Provide a valid configuration YAML "
@@ -106,8 +93,11 @@ def yaml_handle(read_flag, input_bucket_name, local_directory,
                     'training_data_local']['path']
                 cfg_cmp_config = config['train']['execution'][
                     'compute_configuration']['name']
-                return cfg_inp_bucket, cfg_out_bucket, cfg_loc_path, \
-                    cfg_cmp_config
+                cfg_key_prefix = config['train']['data_source'][
+                    'training_data']['path']
+                return \
+                    cfg_inp_bucket, cfg_out_bucket, cfg_loc_path, \
+                    cfg_cmp_config, cfg_key_prefix
             if read_flag == 'N':
                 with open(file_name, 'w') as fp:
                     config['train']['data_source'][
@@ -118,7 +108,7 @@ def yaml_handle(read_flag, input_bucket_name, local_directory,
                         'training_data_local']['path'] = local_directory
                     config['train']['execution'][
                         'compute_configuration']['name'] = compute_config
-                # Updating configuration file with new values
+                    # Updating configuration file with new values
                     yaml.dump(config, fp)
                     return True
             if read_flag == 'C':
@@ -156,11 +146,12 @@ def env_extract(access_key, secret_access_key, username,
     set along with configuration variables
     values that have been updated in YAML file.
     """
-    cfg_inp_bucket, cfg_out_bucket, cfg_loc_path, cfg_cmp_config = \
-        yaml_handle('Y', '', '', '', '')
+    (cfg_inp_bucket, cfg_out_bucket, cfg_loc_path, cfg_cmp_config,
+     cfg_key_prefix) = yaml_handle('Y', '', '', '', '')
     yaml_handler = YAMLHandler(cfg_inp_bucket, cfg_out_bucket,
                                cfg_loc_path, cfg_cmp_config,
-                               access_key, secret_access_key)
+                               access_key, secret_access_key,
+                               cfg_key_prefix)
     input_bucket_name, local_directory = yaml_handler.input_bucket_handle()
     result_bucket_name = yaml_handler.result_bucket_handle(input_bucket_name)
     compute_config = yaml_handler.configuration_check()
@@ -204,8 +195,8 @@ def env_extract(access_key, secret_access_key, username,
               '                          ')
         print('  2. Run `python wml_train.py {} prepare` to verify your '
               'step.         '.format(sys.argv[1]))
-        print('  3. Run `python wml_train.py {}` to train the model using '
-              'your data.  '.format(sys.argv[1]))
+        print('  3. Run `python wml_train.py {} package` to train the '
+              'model using your data.  '.format(sys.argv[1]))
         print('                                                           '
               '                        ')
         print('***********************************************************'
@@ -321,15 +312,16 @@ if cos_env_check_flag == 'Y' and wml_env_check_flag == 'Y':
         change_setting_flag = 'Y'
     # Steps for option 3: User wants to change only compute configuration.
     if user_option == '3':
-        cfg_inp_bucket, cfg_out_bucket, cfg_loc_path, cfg_cmp_config = \
-            yaml_handle('Y', '', '', '', '')
+        (cfg_inp_bucket, cfg_out_bucket, cfg_loc_path, cfg_cmp_config,
+         cfg_key_prefix) = yaml_handle('Y', '', '', '', '')
         # Extract environment variables
         access_key = os.environ['AWS_ACCESS_KEY_ID']
         secret_access_key = os.environ['AWS_SECRET_ACCESS_KEY']
         # Call function to change configuration
         yaml_handler = YAMLHandler(cfg_inp_bucket, cfg_out_bucket,
                                    cfg_loc_path, cfg_cmp_config,
-                                   access_key, secret_access_key)
+                                   access_key, secret_access_key,
+                                   cfg_key_prefix)
         compute_config = yaml_handler.configuration_check()
         config_result = yaml_handle('C', '', '', '', compute_config)
         if config_result:
@@ -375,9 +367,8 @@ config_display = """
 *--------------------------------------------------------------------------*
     """
 
-
 # Steps for changing configuration
-if cos_env_check_flag == 'N' or wml_env_check_flag == 'N': # noqa
+if cos_env_check_flag == 'N' or wml_env_check_flag == 'N':  # noqa
     flow_check_flag = 'N'
     if cos_env_check_flag == 'N' and wml_env_check_flag == 'N' and \
             change_setting_flag == 'N' and flow_check_flag == 'N':

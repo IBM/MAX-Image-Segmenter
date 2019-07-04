@@ -1,18 +1,103 @@
 from .debug import debug
 
+import json
 import re
+from watson_machine_learning_client import WatsonMachineLearningAPIClient
 from watson_machine_learning_client.wml_client_error import ApiRequestFailure
 
 
-class WMLWrapperException(Exception):
+class WMLWrapperError(Exception):
     pass
 
 
 class WMLWrapper:
     """Basic wrapper class for common WML tasks
     """
-    def __init__(self, wml_client=None):
-        self.client = wml_client
+
+    @staticmethod
+    def parse_WML_ApiRequestFailure(arf):
+        """
+        Utility function parses ApiRequestFailure, which is
+        raised by WatsonMachineLearningAPIClient
+
+        :param arf: ApiRequestFailure
+        :type arf: ApiRequestFailure
+        :return: parsed exception
+        :rtype: dict
+        """
+        if arf is None or not isinstance(arf, ApiRequestFailure):
+            return None
+
+        debug('#Exception: {}#'.format(arf))
+
+        if not arf.error_msg:
+            return None
+
+        parsed_arf = {
+            'raw_message_text': [],
+            'status_code': None,
+            'json_body': None,
+            'error_message': None
+        }
+        try:
+            for line in arf.error_msg.split('\n'):
+                parsed_arf['raw_message_text'].append(line)
+                m = re.match(r'Status code: (\d\d\d), body: (.*)$',
+                             line)
+                if m:
+                    parsed_arf['status_code'] = int(m.group(1))
+                    parsed_arf['json_body'] = json.loads(m.group(2))
+
+            if parsed_arf['json_body'].get('errors') and\
+               isinstance(parsed_arf['json_body']['errors'], list) and\
+               len(parsed_arf['json_body']['errors']) > 0:
+                parsed_arf['error_message'] = \
+                    parsed_arf['json_body']['errors'][0].get('message')
+            else:
+                parsed_arf['error_message'] = \
+                    '\n'.join(parsed_arf['raw_message_text'])
+
+            return parsed_arf
+        except Exception as ex:
+            debug('Error trying to parse ApiRequestFailure:')
+            debug(' Message: {}'.format(arf.error_msg))
+            debug(' Exception:', ex)
+
+    def __init__(self,
+                 url,
+                 username,
+                 password,
+                 instance_id):
+        """
+        Initializer
+
+        """
+
+        try:
+            self.client = WatsonMachineLearningAPIClient({
+                            'url': url,
+                            'username': username,
+                            'password': password,
+                            'instance_id': instance_id
+                            })
+            self.client.service_instance.get_details()
+        except ApiRequestFailure as arf:
+            debug('Exception: {}'.format(arf))
+            p = WMLWrapper.parse_WML_ApiRequestFailure(arf)
+            if p:
+                msg = p['error_message']
+            else:
+                msg = arf.error_msg
+            raise WMLWrapperError(
+                    'Error. Cannot connect to WML service: {}'
+                    .format(msg))
+        except Exception as ex:
+            debug('Exception type: {}'.format(type(ex)))
+            debug('Exception: {}'.format(ex))
+            raise WMLWrapperError(ex)
+
+    def get_client(self):
+        return self.client
 
     def start_training(self,
                        model_building_archive,
@@ -32,7 +117,7 @@ class WMLWrapper:
         :returns: training run guid
         :rtype: str
 
-        :raises WMLWrapperException: an error occurred
+        :raises WMLWrapperError: an error occurred
         """
 
         assert model_building_archive is not None, \
@@ -77,7 +162,37 @@ class WMLWrapper:
 
             return run_uid
         except Exception as ex:
-            raise(WMLWrapperException(ex))
+            raise(WMLWrapperError(ex))
+
+    def is_known_training_id(self,
+                             training_guid):
+        """
+        Determines whether training_guid is known to the
+        associated Watson Machine Learning service instance
+
+        :param training_guid: training id
+        :type training_guid: str
+
+        :returns: True if this is a valid training id
+        :rtype: bool
+
+        :raises WMLWrapperError: an error occurred
+        """
+
+        assert training_guid is not None, \
+            'Parameter training_guid cannot be None'
+
+        try:
+            # fetch status for this training id
+            self.client.training.get_status(training_guid)
+            return True
+        except ApiRequestFailure as arf:
+            debug('Exception type: {}'.format(type(arf)))
+            debug('Exception: {}'.format(arf))
+            p = WMLWrapper.parse_WML_ApiRequestFailure(arf)
+            if p and p.get('status_code') == 404:
+                return False
+            raise WMLWrapperError(arf)
 
     def get_training_status(self,
                             training_guid,
@@ -94,7 +209,7 @@ class WMLWrapper:
             :returns: training run status, or None
             :rtype: dict
 
-            :raises WMLWrapperException: an error occurred
+            :raises WMLWrapperError: an error occurred
         """
 
         assert training_guid is not None, \
@@ -106,24 +221,14 @@ class WMLWrapper:
         except ApiRequestFailure as arf:
             debug('Exception type: {}'.format(type(arf)))
             debug('Exception: {}'.format(arf))
-            # terrible hack to obtain HTTP status code from
-            # the exception's error message text
-            if arf.error_msg:
-                status_code = None
-                for line in arf.error_msg.split('\n'):
-                    m = re.match(r'Status code: (\d\d\d)',
-                                 line)
-                    if m:
-                        status_code = int(m.group(1))
-                if status_code:
-                    debug('HTTP status code: {}'.format(status_code))
-                    if status_code >= 500 and ignore_server_error:
-                        return None
-            raise WMLWrapperException(arf)
+            p = WMLWrapper.parse_WML_ApiRequestFailure(arf)
+            if p and p.get('status_code') >= 500 and ignore_server_error:
+                return None
+            raise WMLWrapperError(arf)
         except Exception as ex:
             debug('Exception type: {}'.format(type(ex)))
             debug('Exception: {}'.format(ex))
-            raise WMLWrapperException(ex)
+            raise WMLWrapperError(ex)
 
         debug('Training status: ', status)
 
@@ -154,7 +259,7 @@ class WMLWrapper:
             :returns: training run status
             :rtype: dict
 
-            :raises WMLWrapperException: an error occurred
+            :raises WMLWrapperError: an error occurred
         """
 
         assert training_guid is not None, \
@@ -168,24 +273,14 @@ class WMLWrapper:
         except ApiRequestFailure as arf:
             debug('Exception type: {}'.format(type(arf)))
             debug('Exception: {}'.format(arf))
-            # terrible hack to obtain HTTP status code from
-            # the exception's error message text
-            if arf.error_msg:
-                status_code = None
-                for line in arf.error_msg.split('\n'):
-                    m = re.match(r'Status code: (\d\d\d)',
-                                 line)
-                    if m:
-                        status_code = int(m.group(1))
-                if status_code:
-                    debug('HTTP status code: {}'.format(status_code))
-                    if status_code >= 500 and ignore_server_error:
-                        return None
-            raise WMLWrapperException(arf)
+            p = WMLWrapper.parse_WML_ApiRequestFailure(arf)
+            if p and p.get('status_code') >= 500 and ignore_server_error:
+                return None
+            raise WMLWrapperError(arf)
         except Exception as ex:
             debug('Exception type: {}'.format(type(ex)))
             debug('Exception: {}'.format(ex))
-            raise WMLWrapperException(ex)
+            raise WMLWrapperError(ex)
 
         # extract results bucket name and model location from the response
         if ((details.get('entity', None) is not None) and
