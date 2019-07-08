@@ -77,8 +77,19 @@ tf.app.flags.DEFINE_string(
     'sample/tfrecord',
     'Path to save converted SSTable of TensorFlow examples.')
 
+tf.app.flags.DEFINE_string(
+    'input_image_format',
+    'jpg',
+    'Format of training images.')
+
+tf.app.flags.DEFINE_string(
+    'input_label_format',
+    'png',
+    'Format of training images.')
+
 # changed num_shards from 4 to 1 (GS, 6/3)
 _NUM_SHARDS = 1
+
 
 def _convert_dataset(dataset_split, image_format, label_format):
   """Converts the specified dataset split to TFRecord format.
@@ -136,15 +147,9 @@ def _convert_dataset(dataset_split, image_format, label_format):
 
 def main(argv):
   # adding input and output formats to be passed in as command line arguments (GS, 6/3)
-  if len(argv) != 3:
-    print("Usage: python convert_data.py [image_format] [label_format]")
-    sys.exit(1)
-  input_format = argv[1]
-  label_format = argv[2]
-
   dataset_splits = tf.gfile.Glob(os.path.join(FLAGS.list_folder, '*.txt'))
   for dataset_split in dataset_splits:
-    _convert_dataset(dataset_split, input_format, label_format)
+    _convert_dataset(dataset_split, FLAGS.input_image_format, FLAGS.input_label_format)
 
 
 if __name__ == '__main__':
