@@ -1,4 +1,4 @@
-## How to Train this Model Using your Own Data
+## Train the Model with Your Own Data
 
 - [Prepare Data for Training](#prepare-your-data-for-training)
 - [Train the Model](#train-the-model)
@@ -34,43 +34,46 @@ If you wish to perform transfer learning or resume from a previous checkpoint, p
 
 If you wish to change training hyper-parameters like `num_iterations`, `learning_rate`, `stride_size` etc, pass the corresponding arguments to `$MODEL_REPO_HOME_DIR/training/training_code/training_command.sh`. Look for `#TODO`s on the file which will guide you. You can also change the backbone/model type to either `full` (which uses the `xception_65` architecture) or the faster `mobile`(which uses a `mobilenet_v2` architecture).
 
-
 ### Run the Setup Script
 
-```shell
-$ python setup.py max-image-segmenter-training-config.yaml
-```
+The `wml_setup.py` script prepares your local environment and your IBM Cloud resources for model training.
 
-Setup functionalities:
-
-In order to run the model training script two sets of environment variables need to be defined:
-* Watson Machine Learning
-    * ML_USERNAME
-    * ML_PASSWORD
-    * ML_ENV
-    * ML_INSTANCE
-* Cloud Object Storage
-    * AWS_ACCESS_KEY
-    * AWS_SECRET_ACCESS_KEY
-
-The wml_setup.py script ensures that these variables are properly defined and YAML file is properly configured. 
-
-The main menu options vary depending on which environment variables are set when wml_setup.py is run.
-
-### Train the Model Using Watson Machine Learning
-
-1. Locate the training configuration file.
+1. Locate the training configuration file. It is named `max-image-segmenter-training-config.yaml`.
 
    ```
 
    $ ls *.yaml
-     ...yaml
+     max-image-segmenter-training-config.yaml
    ```
 
-1. Verify that the training preparation steps complete successfully. 
+1. Configure your environment for model training. Run `wml_setup.py` and follow the prompts.
 
    ```
-    $ python train.py max-image-segmenter-training-config.yaml prepare
+    $ python wml_setup.py max-image-segmenter-training-config.yaml 
+     ...
+   ```
+   
+1. After setup has completed, define the displayed environment variables. These variables provide the model training script with access credentials for your Watson Machine Learning service and Cloud Object Storage service. 
+
+   MacOS example:
+
+   ```
+   $ export ML_INSTANCE=...
+   $ export ML_USERNAME=...
+   $ export ML_PASSWORD=...
+   $ export ML_ENV=...
+   $ export AWS_ACCESS_KEY_ID=...
+   $ export AWS_SECRET_ACCESS_KEY=...
+   ```
+   
+   > The training script `wml_train.py` requires these environment variables. If they are not set, model training cannot be started.
+
+### Train the Model Using Watson Machine Learning
+
+1. Verify that the training preparation steps complete successfully. Replace `<model-name.yaml>` with your configuration file.
+
+   ```
+    $ python wml_train.py max-image-segmenter-training-config.yaml prepare
      ...
      # --------------------------------------------------------
      # Checking environment variables ...
@@ -78,15 +81,16 @@ The main menu options vary depending on which environment variables are set when
      ...
    ```
 
-   If prepartion completed successfully:
+   If preparation completed successfully:
 
-    - Training data is present in the Cloud Object Storage bucket that WML will access during model training.
-    - Model training code is packaged `max-image-segmenter-model-building-code.zip`
+    - The required environment variables are defined.
+    - Training data is present in the Cloud Object Storage bucket that Watson Machine Learning will access to train the model.
+    - The model training code is packaged in a ZIP file named `max-image-segmenter-model-building-code.zip` that Watson Machine Learning uses to train the model.
 
 1. Start model training.
 
    ```
-   $ python train.py max-image-segmenter-training-config.yaml
+   $ python wml_train.py <...-training-config.yaml> package
     ...
     # --------------------------------------------------------
     # Starting model training ...
@@ -99,14 +103,18 @@ The main menu options vary depending on which environment variables are set when
     Model training was started. Training id: model-...
     ...
    ```
+   
+    > Take note of the training id.
 
-1. Monitor training progress
+1. Monitor the model training progress.
 
    ```
    ...
    Training status is updated every 15 seconds - (p)ending (r)unning (e)rror (c)ompleted: 
    ppppprrrrrrr...
    ```
+
+   > Training continues should your training script get disconnected (e.g. because you terminated the script or lost network connectivity). You can resume monitoring by running `python wml_train.py max-image-segmenter-training-config.yaml package <training-id>`.
 
    After training has completed the training log file `training-log.txt` is downloaded along with the trained model artifacts.
 
