@@ -119,3 +119,4 @@ training/max-image-segmenter-model-building-code.zip
 *.pb
 custom_assets/*
 !docs/*.png
+.vscode/settings.json
