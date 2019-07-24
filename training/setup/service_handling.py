@@ -1,3 +1,19 @@
+#
+# Copyright 2018-2019 IBM Corp. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
 import sys
 import requests
 import json
@@ -41,32 +57,25 @@ class ServiceHandler:
             resources_name = []
             print('-----------------------------------------------'
                   '-------------------------')
-            print('Available resources are: ')
+            print('Available resource groups: ')
             print('-----------------------------------------------'
                   '-------------------------')
             for ind, value in enumerate(response['resources'], start=1):
-                print("{}. {}".format(ind, value['name']))
+                print("{:2d}. {}".format(ind, value['name']))
                 resources_name.append(value['name'])
                 resources_list.append(value['id'])
             # return default resource id if only one resource is available.
             if len(resources_list) == 1:
                 print(' ')
-                print("[MESSAGE] Using the default available resource "
+                print("[MESSAGE] Using resource group "
                       "'{}'.".format(resources_name[0]))
                 return resources_list[0]
             else:
                 while True:
-                    resources_id = input("[PROMPT] Your selection:  ")
-                    if resources_id == '':
-                        print("[MESSAGE] Enter a number between 1 and "
-                              "{}.".format(len(resources_name)))
-                        continue
-                    elif not resources_id.isdigit():
-                        print("[MESSAGE] Enter a number between 1 and "
-                              "{}.".format(len(resources_name)))
-                        continue
-                    elif int(resources_id) < 1 or \
-                            int(resources_id) >= (len(resources_list) + 1):
+                    resources_id = input("[PROMPT] Your selection:  ").strip()
+                    if not resources_id.isdigit() or \
+                       int(resources_id) < 1 or \
+                       int(resources_id) >= (len(resources_list) + 1):
                         print("[MESSAGE] Enter a number between 1 and "
                               "{}.".format(len(resources_name)))
                         continue
@@ -90,49 +99,41 @@ class ServiceHandler:
         wml_deployment_location = ['eu-de', 'eu-gb', 'jp-tok', 'us-south']
         # WML available plans
         wml_plans = ['wml-lite', 'wml-professional', 'wml-standard']
-        print("[MESSAGE] Choose Watson Machine Learning "
-              "deployment location from the displayed options. ")
+        print("[MESSAGE] Choose a deployment location for this new instance.")
         for i, v in enumerate(wml_deployment_location, start=1):
-            print('{}. {}'.format(i, v))
+            print('{:2d}. {}'.format(i, v))
         while True:
-            wml_dep_option = input("[PROMPT] Your selection:  ")
-            if wml_dep_option == '':
-                print("[MESSAGE] Enter a number between 1 and 4.")
-                continue
-            elif not wml_dep_option.isdigit():
-                print("[MESSAGE] Enter a number between 1 and 4.")
-                continue
-            elif int(wml_dep_option) > 4 or int(wml_dep_option) < 1:
-                print("[MESSAGE] Enter a number between 1 and 4.")
+            wml_dep_option = input("[PROMPT] Your selection:  ").strip()
+            if not wml_dep_option.isdigit() or \
+               int(wml_dep_option) < 1 or \
+               int(wml_dep_option) > len(wml_deployment_location):
+                print("[MESSAGE] Enter a number between 1 and {}."
+                      .format(len(wml_deployment_location)))
                 continue
             else:
                 print('---------------------------------------------'
                       '----------------------------')
-                print('[MESSAGE] Chosen Watson Machine Learning location '
-                      'is : {}'.
+                print('[MESSAGE] The Watson Machine Learning service instance'
+                      ' will be created in "{}".'.
                       format(wml_deployment_location[int(wml_dep_option) - 1]))
                 print('-----------------------------------------------'
                       '----------------------------')
                 break
-        print("[MESSAGE] Choose Watson Machine Learning (WML) plan "
-              "from the displayed options. ")
+        print("[MESSAGE] Choose a Watson Machine Learning service plan:")
         for i, v in enumerate(wml_plans, start=1):
-            print('{}. {}'.format(i, v))
+            print('{:2d}. {}'.format(i, v))
         while True:
-            wml_plan_option = input("[PROMPT] Your selection:  ")
-            if wml_plan_option == '':
-                print("[MESSAGE] Enter a number between 1 and 3.")
-                continue
-            elif not wml_plan_option.isdigit():
-                print("[MESSAGE] Enter a number between 1 and 3.")
-                continue
-            elif int(wml_plan_option) > 3 or int(wml_plan_option) < 1:
-                print("[MESSAGE] Enter a number between 1 and 3.")
+            wml_plan_option = input("[PROMPT] Your selection:  ").strip()
+            if not wml_plan_option.isdigit() or \
+               int(wml_plan_option) < 1 or \
+               int(wml_plan_option) > len(wml_plans):
+                print("[MESSAGE] Enter a number between 1 and {}."
+                      .format(len(wml_plans)))
                 continue
             else:
                 print('---------------------------------------------'
                       '-----------------------------')
-                print('[MESSAGE] Chosen Watson Machine Learning plan is : {}'.
+                print('[MESSAGE] Using the "{}" service plan.'.
                       format(wml_plans[int(wml_plan_option) - 1]))
                 print('----------------------------------------------'
                       '-----------------------------')
@@ -154,17 +155,14 @@ class ServiceHandler:
         print("[MESSAGE] Choose Cloud Object Storage plan "
               "from the displayed options. ")
         for i, v in enumerate(cos_plans, start=1):
-            print('{}. {}'.format(i, v))
+            print('{:2d}. {}'.format(i, v))
         while True:
-            cos_plan_option = input("[PROMPT] Your selection: ")
-            if cos_plan_option == '':
-                print("[MESSAGE] Enter a number between 1 and 2.")
-                continue
-            elif not cos_plan_option.isdigit():
-                print("[MESSAGE] Enter a number between 1 and 2.")
-                continue
-            elif int(cos_plan_option) > 2 or int(cos_plan_option) < 1:
-                print("[MESSAGE] Enter a number between 1 and 2.")
+            cos_plan_option = input("[PROMPT] Your selection: ").strip()
+            if not cos_plan_option.isdigit() or \
+               int(cos_plan_option) < 1 or \
+               int(cos_plan_option) > len(cos_plans):
+                print("[MESSAGE] Enter a number between 1 and {}."
+                      .format(len(cos_plans)))
                 continue
             else:
                 print('----------------------------------------------'
@@ -236,8 +234,8 @@ class ServiceHandler:
         # Response error check
         if wml_key_response.status_code == 201:
             wml_key_response = wml_key_response.json()
-            print("[MESSAGE] WML key with the name '%s' has been "
-                  "created" % wml_key_response['name'])
+            print("[MESSAGE] Service credentials named '{}' have been "
+                  "created.".format(wml_key_response['name']))
             return wml_key_response['credentials']['username'], \
                 wml_key_response['credentials']['password'], \
                 wml_key_response['credentials']['instance_id'], \
@@ -276,8 +274,8 @@ class ServiceHandler:
         # Error check
         if cos_key_response.status_code == 201:
             cos_key_response = cos_key_response.json()
-            print("[MESSAGE] Object storage key with the name '%s' "
-                  "has been created" % cos_key_response['name'])
+            print("[MESSAGE] Object storage credentials named '{}' "
+                  "have been created".format(cos_key_response['name']))
             return cos_key_response['credentials']['resource_instance_id'], \
                 cos_key_response['credentials']['apikey'], \
                 cos_key_response['credentials']['cos_hmac_keys'][

@@ -1,3 +1,19 @@
+#
+# Copyright 2018-2019 IBM Corp. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
 import requests
 import sys
 import json
@@ -56,7 +72,7 @@ class InstanceHandler:
                                 enumerate(self.data[which_resource].items()):
                             if plan['resource_plan_id'] == values[1]:
                                 count += 1
-                                print("{}. Instance Name: {}   |  "
+                                print("{:2d}. Instance Name: {}   |  "
                                       "Instance Location: {}  | "
                                       "Instance Plan: {} ".
                                       format(int(count), value['name'],
@@ -65,29 +81,23 @@ class InstanceHandler:
                                 existing_guids.append(value['guid'])
             # Adding create new instance option.
             if len(existing_instances) > 0:
-                print('{}. {}'.format(int(count) + 1,
-                                      '* Create New Instance *'))
+                print('{:2d}. {}'.format(int(count) + 1,
+                                         '* Create New Instance *'))
                 existing_instances.append('Create New Instance')
                 existing_guids.append('Create New Guid')
             else:
                 # Default instance create option when no instances are found
-                print('{}. {}'.format(1, 'Create New Instance'))
+                print('{:2d}. {}'.format(1, 'Create New Instance'))
             # Prompt user to input choice and return lists and choice.
             if len(existing_instances) > 0 and \
                     existing_instances[0] != 'Create New Instance':
                 while True:
-                    instance_option = input("[PROMPT] Your selection:  ")
-                    if instance_option == '':
-                        print("[MESSAGE] Enter number between 1 and "
-                              "{}.".format(len(existing_instances)))
-                        continue
-                    elif not instance_option.isdigit():
-                        print("[MESSAGE] Enter number between 1 and "
-                              "{}.".format(len(existing_instances)))
-                        continue
-                    elif int(instance_option) < 1 or (int(
-                            instance_option) >= (len(existing_instances) + 1)):
-                        print("[MESSAGE] Enter number between 1 and "
+                    instance_option = input("[PROMPT] Your selection:  ") \
+                                      .strip()
+                    if not instance_option.isdigit() or \
+                       int(instance_option) < 1 or \
+                       (int(instance_option) >= (len(existing_instances) + 1)):
+                        print("[MESSAGE] Enter a number between 1 and "
                               "{}.".format(len(existing_instances)))
                         continue
                     else:
@@ -132,30 +142,22 @@ class InstanceHandler:
                     # Check if provided instance guid matches with current
                     if key['credentials']['instance_id'] == instance_guid:
                         count += 1
-                        print("{}. {}".format(count, key['name']))
+                        print("{:2d}. {}".format(count, key['name']))
                         existing_keys.append(key['name'])
                         existing_keys_guid.append(key['guid'])
                 except KeyError:
                     continue
-            if len(existing_keys) > 0:
-                print('{}. {}'.format(int(count) + 1, '* Create New Key *'))
-                existing_keys.append('Create New Key')
-            else:
-                print('{}. {}'.format(1, 'Create New Key'))
+            print('{:2d}. {}'.format(count + 1,
+                                     '* Create New Service Credentials *'))
+            existing_keys.append('Create New Key')
+
             if len(existing_keys) > 0:
                 while True:
-                    key_option = input("[PROMPT] Your selection:  ")
-                    if key_option == '':
-                        print("[MESSAGE] Enter number between 1 and "
-                              "{}.".format(len(existing_keys)))
-                        continue
-                    elif not key_option.isdigit():
-                        print("[MESSAGE] Enter number between 1 and "
-                              "{}.".format(len(existing_keys)))
-                        continue
-                    elif int(key_option) < 1 or int(key_option) >= \
-                            (len(existing_keys) + 1):
-                        print("[MESSAGE] Enter number between 1 and "
+                    key_option = input("[PROMPT] Your selection:  ").strip()
+                    if not key_option.isdigit() or \
+                       int(key_option) < 1 or \
+                       int(key_option) >= (len(existing_keys) + 1):
+                        print("[MESSAGE] Enter a number between 1 and "
                               "{}.".format(len(existing_keys)))
                         continue
                     else:
@@ -202,32 +204,26 @@ class InstanceHandler:
                     instance_id = k['resource_instance_url'].split('/')[-1]
                     if instance_id == instance_guid:
                         count += 1
-                        print("{}. {}".format(count, k['name']))
+                        print("{:2d}. {}".format(count, k['name']))
                         existing_keys.append(k['name'])
                         existing_key_guid.append(k['guid'])
                 except KeyError:
                     continue
             if len(existing_keys) > 0:
-                print('{}. {}'.format(int(count) + 1, '* Create New Key *'))
-                existing_keys.append('Create New Key')
+                print('{:2d}. {}'.format(int(count) + 1,
+                                         '* Create New Service Credentials *'))
             else:
-                print('{}. {}'.format(1, 'Create New Key'))
-                existing_keys.append('Create New Key')
+                print('{:2d}. {}'.format(1,
+                                         '* Create New Service Credentials *'))
+            existing_keys.append('Create New Key')
             # Prompt for user input
             if len(existing_keys) > 0:
                 while True:
-                    key_option = input("[PROMPT] Your selection:  ")
-                    if key_option == '':
-                        print("[MESSAGE] Enter number between 1 and "
-                              "{}.".format(len(existing_keys)))
-                        continue
-                    elif not key_option.isdigit():
-                        print("[MESSAGE] Enter number between 1 and "
-                              "{}.".format(len(existing_keys)))
-                        continue
-                    elif int(key_option) < 1 or int(key_option) >= \
-                            (len(existing_keys) + 1):
-                        print("[MESSAGE] Enter number between 1 and "
+                    key_option = input("[PROMPT] Your selection:  ").strip()
+                    if not key_option.isdigit() or \
+                       int(key_option) < 1 or \
+                       int(key_option) >= (len(existing_keys) + 1):
+                        print("[MESSAGE] Enter a number between 1 and "
                               "{}.".format(len(existing_keys)))
                         continue
                     else:

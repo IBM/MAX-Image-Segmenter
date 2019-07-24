@@ -1,3 +1,19 @@
+#
+# Copyright 2018-2019 IBM Corp. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
 import os
 import sys
 import ruamel.yaml
@@ -8,23 +24,28 @@ from setup.setup_functions import InstanceHandler
 from setup.instance_handling import MainHandler
 
 setup_goal = """
-Setup goal:
-
-1. Manage Watson Machine Learing and Cloud Object Storage services.
-2. Set environment variables required for initiating the training process.
-3. Configure YAML file.
-4. Configure GPU settings.
+Use this script to configure your environment for MAX model training:
+ 1. Manage Watson Machine Learning and Cloud Object Storage training resources.
+ 2. Set environment variables required for the model training script.
+ 3. Customize the training configuration file.
+ 4. Configure the training compute resources.
 """
 
 print(setup_goal)
 
 if len(sys.argv) == 1:
-    print(" Please provide the configuration YAML file name")
-    print('\nUsage: python {} <training_config_file> [command] \n'
+    print('Invocation error. '
+          'Please provide a training configuration YAML file name.')
+    print('\nUsage: python {} <training_config_file>  \n'
           .format(sys.argv[0]))
     sys.exit()
 
 if len(sys.argv) == 2:
+    if os.path.isfile(sys.argv[1]) is False:
+        print('Invocation error. "{}" is not a file.'.format(sys.argv[1]))
+        print('\nUsage: python {} <training_config_file>  \n'
+              .format(sys.argv[0]))
+        sys.exit()
     file_name = sys.argv[1]
     yaml = ruamel.yaml.YAML(typ='rt')
     yaml.allow_duplicate_keys = True
@@ -46,7 +67,7 @@ if len(sys.argv) == 2:
                 'training_data'])
     except Exception as e:
         print("Exception is: ", e)
-        print("[DEBUG] Provide a valid configuration YAML "
+        print("[ERROR] Provide a valid configuration YAML "
               "file for initiating the training process")
         sys.exit()
 
@@ -155,80 +176,76 @@ def env_extract(access_key, secret_access_key, username,
     input_bucket_name, local_directory = yaml_handler.input_bucket_handle()
     result_bucket_name = yaml_handler.result_bucket_handle(input_bucket_name)
     compute_config = yaml_handler.configuration_check()
-    print('--------------------------------------------------------'
-          '----------------------')
-    print('NEW YAML CONFIGURATION VALUES')
-    print('---------------------------------------------------------'
-          '---------------------')
-    print('input_bucket  :', input_bucket_name)
-    print('local directory  :', local_directory)
-    print('result bucket  :', result_bucket_name)
-    print('compute  :', compute_config)
-    print('---------------------------------------------------------'
-          '---------------------')
+
+    summary = """
+*-----------------------------------------------------------------------------*
+| Model training setup is complete and your configuration file was updated.   |
+*-----------------------------------------------------------------------------*
+
+    Training data bucket name   : {}
+    Local data directory        : {}
+    Training results bucket name: {}
+    Compute configuration       : {}
+
+    """.format(input_bucket_name,
+               local_directory,
+               result_bucket_name,
+               compute_config)
+
+    print(summary)
+
     config_result = yaml_handle('N', input_bucket_name,
                                 local_directory, result_bucket_name,
                                 compute_config)
     if config_result:
-        print('**********************    Setup successfully completed '
-              '     ***********************')
-        print('                                                       ')
-        print('                                 NEXT STEPS             '
-              '                           ')
-        print('                                                        '
-              '                           ')
-        print('  1. Update or set the following environment variables   '
-              '                          ')
-        print('        i) ML_USERNAME={0}                               '
-              '              '.format(username))
-        print('       ii) ML_PASSWORD={}                                '
-              '              '.format(password))
-        print('      iii) ML_INSTANCE={}                                '
-              '              '.format(instance_id))
-        print('       iv) ML_ENV={}                                     '
-              '              '.format(url))
-        print('        v) AWS_ACCESS_KEY_ID={}                          '
-              '              '.format(access_key))
-        print('       vi) AWS_SECRET_ACCESS_KEY={}                      '
-              '              '.format(secret_access_key))
-        print('                                                         '
-              '                          ')
-        print('  2. Run `python wml_train.py {} prepare` to verify your '
-              'step.         '.format(sys.argv[1]))
-        print('  3. Run `python wml_train.py {} package` to train the '
-              'model using your data.  '.format(sys.argv[1]))
-        print('                                                           '
-              '                        ')
-        print('***********************************************************'
-              '*************************')
+        next_steps = """
+*-----------------------------------------------------------------------------*
+| Next steps                                                                  |
+*-----------------------------------------------------------------------------*
+
+1. Update or set the following environment variables:
+    ML_USERNAME={}
+    ML_PASSWORD={}
+    ML_INSTANCE={}
+    ML_ENV={}
+    AWS_ACCESS_KEY_ID={}
+    AWS_SECRET_ACCESS_KEY={}
+
+2. Run `python wml_train.py {} prepare` to verify your setup.
+
+3. Run `python wml_train.py {} package` to train the model using your data.
+        """.format(username,
+                   password,
+                   instance_id,
+                   url,
+                   access_key,
+                   secret_access_key,
+                   sys.argv[1],
+                   sys.argv[1])
+        print(next_steps)
     sys.exit()
 
 
 env_check = """
-*------------------------------------------------------------------------*
-|                     Model Asset Exchange                               |
-| One place for all state of the art Open Source deep learning models.   |
-*------------------------------------------------------------------------*
 
        *****    MODEL TRAINING ENVIRONMENT SETUP    *****
 
-
-Now checking for existing environment variables....................
-
-*************    PRE-REQUISITE FOR TRAINING SETUP       ******************
+*********************    IBM Cloud access required  **********************
 *                                                                        *
-*                    Create IBM Cloud API Key                            *
-*  This step is required if IBM Cloud API Key JSON file has not          *
-*  been downloaded before.                                               *
+*  To configure your model training resources, this setup script         *
+*  requires access to your IBM Cloud API key.                            *
 *                                                                        *
-*                                                                        *
-*       1. Login to IBM Cloud                                            *
-*       2. Go to Manage -> Access(IAM) -> IBM Cloud API Keys             *
+*  You can create this key by following these steps:                     *
+*       1. Open https://cloud.ibm.com/ in your browser and log in.       *
+*       2. Go to Manage -> Access(IAM) -> IBM Cloud API Keys.            *
 *       3. Click `Create an IBM Cloud API Key`. Provide `name` and       *
 *           `description`.                                               *
 *       4. Click `Create` and download the JSON Key file when prompted.  *
+*       5. Save this file in a secure location.                          *
 *                                                                        *
 **************************************************************************
+
+Checking for existing environment variables...
 
             """
 print(env_check)
@@ -265,31 +282,24 @@ else:
 if cos_env_check_flag == 'Y' and wml_env_check_flag == 'Y':
     selection = """
 *--------------------------------------------------------------------*
-|     Environment variables have already been set.                   |
 |     Choose an option from below for next steps                     |
 |--------------------------------------------------------------------|
-|    MENU                                                            |
 |                                                                    |
-|    1. Proceed with current settings.                               |
+|    1. Update training configuration.                               |
 |                                                                    |
-|    2. Change settings.                                             |
+|    2. Update environment variable and training configuration.      |
 |                                                                    |
-|    3. Change GPU configuration settings.                           |
+|    3. Update only the compute configuration.                       |
 |                                                                    |
 *--------------------------------------------------------------------*
             """
     print(selection)
     while True:
         # Get user option
-        user_option = input("[PROMPT] Your selection:  ")
-        if user_option == '':
-            print("[MESSAGE] Enter number between 1 and 3.")
-            continue
-        elif not user_option.isdigit():
-            print("[MESSAGE] Enter number between 1 and 3.")
-            continue
-        elif int(user_option) < 1 or int(user_option) > 3:
-            print("[MESSAGE] Enter number between 1 and 3.")
+        user_option = input("[PROMPT] Your selection:  ").strip()
+        if not user_option.isdigit() or int(user_option) < 1 \
+           or int(user_option) > 3:
+            print("[MESSAGE] Enter a number between 1 and 3.")
             continue
         else:
             break
@@ -327,22 +337,31 @@ if cos_env_check_flag == 'Y' and wml_env_check_flag == 'Y':
         if config_result:
             print('-------------------------------------------------------'
                   '-----------------------')
-            print("[MESSAGE] Compute configured has been changed to "
-                  "{}.".format(compute_config))
+            print("[MESSAGE] The compute configuration was changed to "
+                  "'{}'.".format(compute_config))
             print('-------------------------------------------------------'
                   '-----------------------')
+        next_steps = """
+*-----------------------------------------------------------------------------*
+| Next steps                                                                  |
+*-----------------------------------------------------------------------------*
+
+1. Run `python wml_train.py {} prepare` to verify your setup.
+
+2. Run `python wml_train.py {} package` to train the model using your data.
+        """.format(sys.argv[1],
+                   sys.argv[1])
+        print(next_steps)
+
         sys.exit()
 
 resource_id_display = """
 *--------------------------------------------------------------------------*
 |                                                                          |
-|   IBM resource group id retrieval.                                       |
+|   Retrieving your IBM resource group information.                        |
 |                                                                          |
-|   A resource group is a way for you to organize your account resources   |
-|   in customizable groupings. When you create a service instance for one  |
-|   of the services (e.g. Watson Machine Learning), it is assigned to a    |
-|   particular resource group. Once assigned to a resource group, it can't |
-|   be changed.                                                            |
+|   A resource group is used to organize your IBM Cloud resources, such    |
+|   as AI and storage services.                                            |
 |                                                                          |
 *--------------------------------------------------------------------------*
                           """
@@ -350,19 +369,9 @@ resource_id_display = """
 config_display = """
 *--------------------------------------------------------------------------*
 |                                                                          |
-|   Time to configure Watson Machine Learning and Cloud Object Storage     |
-|                                                                          |
-|  Instance: When you purchase a service on IBM Cloud, an instance of      |
-|            that service is provisioned for you to use.                   |
-|                                                                          |
-|  Service Credentials(Key): Service credentials are authentication        |
-|           credentials associated with a service. It is used for          |
-|           interacting with a service.                                    |
-|                                                                          |
-|  To design, train, and deploy machine learning models in IBM Watson      |
-|  Studio, you need to associate an IBM Watson Machine Learning service    |
-|  instance as well as some supporting services (such as IBM Cloud Object  |
-|  Storage for storage) with a project.                                    |
+|  To train a MAX model using your own data, an instance of the            |
+|  Watson Machine Learning service and an instance of the Cloud Object     |
+|  service is required.                                                    |
 |                                                                          |
 *--------------------------------------------------------------------------*
     """
@@ -375,8 +384,8 @@ if cos_env_check_flag == 'N' or wml_env_check_flag == 'N':  # noqa
         print('   ')
         print("*------------------------------------------------------"
               "-------------------------*")
-        print("|  Configuring both Watson Machine Learning and "
-              "Cloud Object Storage.           |")
+        print("|  Configuring Watson Machine Learning and "
+              "Cloud Object Storage resources.      |")
         print("*------------------------------------------------------"
               "-------------------------*")
         option = 'both'
@@ -386,12 +395,12 @@ if cos_env_check_flag == 'N' or wml_env_check_flag == 'N':  # noqa
             and flow_check_flag == 'N':
         selection = """
 *---------------------------------------------------------------------------*
-|                                   MENU                                    |
+|    Change an existing model training configuration.                       |
 |----------------------------------------------------------------------------
 |                                                                           |
-|    1. Configure both Watson Machine Learning and Cloud Object Storage.    |
+|    1. Re-configure Watson Machine Learning and Cloud Object Storage.      |
 |                                                                           |
-|    2. Configure only Cloud Object Storage                                 |
+|    2. Re-configure only Cloud Object Storage.                             |
 |                                                                           |
 *---------------------------------------------------------------------------*
                            """
@@ -419,12 +428,12 @@ if cos_env_check_flag == 'N' or wml_env_check_flag == 'N':  # noqa
             and flow_check_flag == 'N':
         selection = """
 *---------------------------------------------------------------------------*
-|                                   MENU                                    |
+|    Change an existing model training configuration.                       |
 |----------------------------------------------------------------------------
 |                                                                           |
-|    1. Configure both Watson Machine Learning and Cloud Object Storage.    |
+|    1. Re-configure Watson Machine Learning and Cloud Object Storage.      |
 |                                                                           |
-|    2. Configure only Watson Machine Learning.                             |
+|    2. Re-configure only Watson Machine Learning.                          |
 |                                                                           |
 *---------------------------------------------------------------------------*
                            """
@@ -451,14 +460,14 @@ if cos_env_check_flag == 'N' or wml_env_check_flag == 'N':  # noqa
     if change_setting_flag == 'Y' and flow_check_flag == 'N':
         selection = """
 *--------------------------------------------------------------------------*
-|                                   MENU                                   |
+|    Change an existing model training configuration.                      |
 |--------------------------------------------------------------------------|
 |                                                                          |
-|    1. Configure both Watson Machine Learning and Cloud Object Storage.   |
+|    1. Re-configure Watson Machine Learning and Cloud Object Storage.     |
 |                                                                          |
-|    2. Configure only Watson Machine Learning.                            |
+|    2. Re-configure only Watson Machine Learning.                         |
 |                                                                          |
-|    3. Configure only Cloud Object Storage                                |
+|    3. Re-configure only Cloud Object Storage.                            |
 |                                                                          |
 *--------------------------------------------------------------------------*
                    """
@@ -487,7 +496,7 @@ if cos_env_check_flag == 'N' or wml_env_check_flag == 'N':  # noqa
     # Generating iam access token
     token_obj = TokenGenerate()
     iam_access_token = token_obj.get_api_location()
-    print('[MESSAGE] IAM Access Token has been generated')
+
     #
     ins_obj = ServiceHandler(iam_access_token)
     # Retrieve resource id
@@ -525,8 +534,6 @@ if cos_env_check_flag == 'N' or wml_env_check_flag == 'N':  # noqa
         except KeyError:
             print("[DEBUG] Error in key retrieval details")
             sys.exit()
-        print('***** Watson Machine Learning setting has been '
-              'completed. *****')
         access_key = os.environ['AWS_ACCESS_KEY_ID']
         secret_access_key = os.environ['AWS_SECRET_ACCESS_KEY']
         env_extract(access_key, secret_access_key, username, password,
