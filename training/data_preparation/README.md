@@ -11,7 +11,7 @@ Follow the instructions in this document to prepare your data for model training
 Install the required packages to convert the data locally. 
 
 ```shell
-$ pip install -r requirements.txt
+$ pip install -r data_prep_requirements.txt
 ```
 
 ### Data Format

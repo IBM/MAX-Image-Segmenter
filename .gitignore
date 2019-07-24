@@ -1,5 +1,5 @@
 training/training_output/
-training/*.zip
+training/*-model-building-code.zip
 # Byte-compiled / optimized / DLL files
 .idea/
 __pycache__/
@@ -114,7 +114,6 @@ ENV/
 *.ckpt*
 *checkpoint
 *.tfevents*
-training/max-image-segmenter-model-building-code.zip
 *.tfrecord
 *.pb
 custom_assets/*
