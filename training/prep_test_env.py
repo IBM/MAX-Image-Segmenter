@@ -54,6 +54,8 @@ cw.clear_bucket(os.environ.get('COS_OUTPUT_BUCKET'))
 
 
 for fp in Path('sample_training_data').glob('**/*'):
-    cw.upload_file(file_name=fp,
-                   bucket_name=os.environ.get('COS_INPUT_BUCKET'),
-                   key_name=fp.replace('sample_training_data/', ''))
+    fp = str(fp)
+    if not os.path.isdir(fp):
+        cw.upload_file(file_name=fp,
+                    bucket_name=os.environ.get('COS_INPUT_BUCKET'),
+                    key_name=fp.replace('sample_training_data/', ''))
