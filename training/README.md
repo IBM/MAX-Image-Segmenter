@@ -32,7 +32,7 @@ If you wish to perform transfer learning or resume from a previous checkpoint, p
 
 ### Customize Model Specific Parameters
 
-If you wish to change training hyper-parameters like `num_iterations`, `learning_rate`, `stride_size` etc, pass the corresponding arguments to `$MODEL_REPO_HOME_DIR/training/training_code/training_command.sh`. Look for `#TODO`s on the file which will guide you. You can also change the backbone/model type to either `full` (which uses the `xception_65` architecture) or the faster `mobile`(which uses a `mobilenet_v2` architecture).
+If you wish to change training hyper-parameters like `num_iterations`, `learning_rate`, `stride_size` etc, pass the corresponding arguments to `$MODEL_REPO_HOME_DIR/training/training_code/training_command.sh`. You can also change the backbone/model type to either `full` (which uses the `xception_65` architecture) or the faster `mobile`(which uses a `mobilenet_v2` architecture).
 
 ### Run the Setup Script
 

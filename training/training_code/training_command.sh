@@ -1,12 +1,17 @@
+# ===============================================
+#   Setup any hyperparameters here               
+# ===============================================
+MODEL_TYPE=mobile
+NUM_ITERATIONS=100
+# ===============================================
+#   Model training code with hyperpameters       
+# ===============================================
+
 # Set up the working environment.
 CURRENT_DIR=$(pwd)
 WORK_DIR="${CURRENT_DIR}/deeplab"
 DATASET_DIR=$DATA_DIR
 
-##########################################################
-# TODO 1: Set Model Type to either `mobile` or `full`    #
-##########################################################
-MODEL_TYPE=mobile
 MODEL_VARIANT=mobilenet_v2
 export PYTHONPATH=$PYTHONPATH:`pwd`:`pwd`/slim
 
@@ -26,11 +31,6 @@ mkdir -p $TRAIN_LOGDIR
 cp -a "${DATA_DIR}/initial_model/." ${TRAIN_LOGDIR}
 echo "Initial checkpoint moved succesfully."
 
-
-##########################################################
-# TODO 2: Set the number of training iterations          #
-##########################################################
-NUM_ITERATIONS=100
 python "${WORK_DIR}"/train.py \
 --logtostderr \
 --train_split="train" \
