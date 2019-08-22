@@ -13,6 +13,7 @@ on:
 jobs:
 
   flake8:
+    name: Test Flake8
 
     runs-on: ubuntu-latest
 
@@ -31,6 +32,7 @@ jobs:
         flake8 . --max-line-length=127
 
   build:
+    name: Build & Run the Docker Container
     runs-on: ubuntu-latest
 
     steps:
@@ -46,7 +48,7 @@ jobs:
       run: sleep 30
 
   test:
-    - name: Setup Python
+    - name: Run Tests
       uses: actions/setup-python@v1
       with:
           python-version: 3.6
