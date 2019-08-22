@@ -46,8 +46,6 @@ jobs:
       run: sleep 30
 
   test:
-    - uses: actions/checkout@v1
-
     - name: Setup Python
       uses: actions/setup-python@v1
       with:
