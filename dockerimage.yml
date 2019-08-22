@@ -1,0 +1,40 @@
+name: Docker Image CI
+
+on:
+  pull_request:
+    branches:
+    - master
+jobs:
+
+  build:
+ 
+    runs-on: ubuntu-latest
+    
+    strategy:
+      max-parallel: 4
+      matrix:
+        python-version: [3.6]
+
+ 
+    steps:
+    - uses: actions/checkout@v1
+
+    - name: Build the Docker image
+      run: docker build -t max-image-segmenter .
+
+    - name: Run the Docker image
+      run: docker run -it --rm -d -p 5000:5000 max-image-segmenter
+
+    - name: Install dependencies
+      run: pip install pytest requests flake8
+
+    - name: Lint with flake8
+      run: flake8 . --max-line-length=127
+      
+      
+    - name: Wait for container to get ready
+      run: sleep 30
+
+    - name: Test with pytest
+      run: pytest tests/test.py
+
