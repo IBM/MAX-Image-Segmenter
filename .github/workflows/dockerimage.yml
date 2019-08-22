@@ -12,7 +12,7 @@ on:
 
 jobs:
 
-  build:
+  flake8:
 
     runs-on: ubuntu-latest
 
@@ -24,21 +24,40 @@ jobs:
       with:
           python-version: 3.6
 
+
+    - name: Test Flake8
+      run: |
+        pip install flake8
+        flake8 . --max-line-length=127
+
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v1
+
     - name: Build the Docker image
       run: docker build -t max-image-segmenter .
 
     - name: Run the Docker image
       run: docker run -it --rm -d -p 5000:5000 max-image-segmenter
 
-    - name: Install dependencies
-      run: pip install pytest requests flake8
-
-    - name: Lint with flake8
-      run: flake8 . --max-line-length=127
-
     - name: Wait for container to get ready
       run: sleep 30
 
+  test:
+    - uses: actions/checkout@v1
+
+    - name: Setup Python
+      uses: actions/setup-python@v1
+      with:
+          python-version: 3.6
+
     - name: Test with pytest
-      run: pytest tests/test.py
+      run: |
+        pip install pytest requests
+        pytest tests/test.py
+
+
+
 
