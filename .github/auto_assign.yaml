@@ -1,3 +1,6 @@
+- name: Auto Assign
+  uses: kentaro-m/auto-assign@v1.0.0
+
 # Set to true to add reviewers to pull requests
 addReviewers: true
 
