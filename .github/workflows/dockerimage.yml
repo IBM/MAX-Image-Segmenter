@@ -41,3 +41,15 @@ jobs:
 
     - name: Test with pytest
       run: pytest tests/test.py
+name: "Issue assigner"
+
+on: [issues, issue_comment]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: estrada9166/issue-assigner@v1
+      with:
+        GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+        WITH_COMMENTS: true
