@@ -234,3 +234,5 @@ then need to rebuild the Docker image (see [step 1](#1-build-the-model)).
 ### 6. Cleanup
 
 To stop the Docker container, type `CTRL` + `C` in your terminal.
+
+### Test Actions
