@@ -10,7 +10,7 @@ NUM_ITERATIONS=100
 # Set up the working environment.
 CURRENT_DIR=$(pwd)
 WORK_DIR="${CURRENT_DIR}/deeplab"
-DATASET_DIR=$DATA_DIR
+DATASET_DIR="${DATA_DIR}/data/"
 
 MODEL_VARIANT=mobilenet_v2
 export PYTHONPATH=$PYTHONPATH:`pwd`:`pwd`/slim
