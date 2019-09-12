@@ -17,14 +17,6 @@
 # uncomment to enable debug output
 #set -x
 
-# --------------------------------------------------------------------
-#  Standard training wrapper script for Model Asset Exchange models
-#  Complete the following IBM customization steps and remove the TODO
-#  comments.
-#   (1) Locate "IBM TODO 1"; specify the training command
-#   (2) Locate "IBM TODO 2"; customize the packaging code
-# --------------------------------------------------------------------
-
 SUCCESS_RETURN_CODE=0
 TRAINING_FAILED_RETURN_CODE=1
 POST_PROCESSING_FAILED=2
@@ -45,11 +37,6 @@ echo "RESULT_DIR: $RESULT_DIR"
 # Perform training tasks
 # ---------------------------------------------------------------
 
-# IBM TODO 1: Specify the training command; the cwd contains the files from 
-#             the training_code directory
-# Example: "python3 train-dcgan.py --dataset ${DATA_DIR}/aligned --epoch 20"
-# start training and capture return code
-
 pip install -r requirements.txt
 
 TRAINING_CMD="./training_command.sh"
@@ -69,14 +56,6 @@ if [ $RETURN_CODE -gt 0 ]; then
 fi
 
 echo "Training completed. Output is stored in $RESULT_DIR."
-
-# ---------------------------------------------------------------
-# IBM TODO 2:
-# Add post processing code as necessary; for example
-#  - patch the TensorFlow checkpoint file (if applicable)
-#  - convert the trained model into other formats
-#  - ... 
-# ---------------------------------------------------------------
 
 # according to WML coding guidelines the trained model should be 
 # saved in ${RESULT_DIR}/model

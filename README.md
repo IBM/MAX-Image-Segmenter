@@ -67,7 +67,6 @@ in a Docker container. This repository was developed as part of the [IBM Code Mo
 1. [Deploy from Docker Hub](#deploy-from-docker-hub)
 2. [Deploy on Kubernetes](#deploy-on-kubernetes)
 3. [Run Locally](#run-locally)
-4. [Retrain the Model on Watson Machine Learning](#retrain-the-model-on-watson-machine-learning)
 
 ## Deploy from Docker Hub
 
