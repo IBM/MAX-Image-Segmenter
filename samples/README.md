@@ -8,6 +8,7 @@ Model files are from the [TensorFlow Models Repository](https://github.com/tenso
 * deeplabv3_mnv2_pascal_trainval_2018_01_29.tar.gz
 
 ## Sample Images
+
 Images are from the [IBM CODAIT Twitter account](https://twitter.com/ibmcodait)
 * stc.jpg
 * stc-brownbag.jpg

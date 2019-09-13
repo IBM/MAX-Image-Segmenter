@@ -25,7 +25,7 @@ SWAGGER_UI_DOC_EXPANSION = 'none'
 # API metadata
 API_TITLE = 'MAX Image Segmenter'
 API_DESC = 'Identify objects in an image, additionally assigning each pixel of the image to a particular object'
-API_VERSION = '1.1.0'
+API_VERSION = '1.2.0'
 
 # default model
 MODEL_NAME = 'deeplab'
