@@ -16,7 +16,6 @@
 # and was released under an Apache 2 license
 
 import os
-import tarfile
 import numpy as np
 import tensorflow as tf
 import warnings
@@ -59,7 +58,7 @@ class DeepLabModel(object):
         with tf.gfile.GFile(frozen_model_path, "rb") as f:
             graph_def = tf.GraphDef()
             graph_def.ParseFromString(f.read())
-       
+
         if graph_def is None:
             raise RuntimeError('Cannot find inference graph in tar archive.')
 
