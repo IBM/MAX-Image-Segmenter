@@ -1,3 +1,5 @@
+training/training_output/
+training/*-model-building-code.zip
 # Byte-compiled / optimized / DLL files
 .idea/
 __pycache__/
@@ -105,3 +107,15 @@ ENV/
 
 /deeplabv3_pascal_trainval_2018_01_04.tar.gz
 /.pytest_cache/
+.DS_Store
+*.png
+*.jpg
+*.pbtxt
+*.ckpt*
+*checkpoint
+*.tfevents*
+*.tfrecord
+*.pb
+custom_assets/*
+!docs/*.png
+.vscode/settings.json

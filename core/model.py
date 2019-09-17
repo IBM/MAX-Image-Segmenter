@@ -1,7 +1,21 @@
+# Copyright 2018-2019 IBM Corp. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
 # This file contains code from https://github.com/tensorflow/models/blob/master/research/deeplab/deeplab_demo.ipynb
 # and was released under an Apache 2 license
+
 import os
-import tarfile
 import numpy as np
 import tensorflow as tf
 import warnings
@@ -36,20 +50,14 @@ class DeepLabModel(object):
     OUTPUT_TENSOR_NAME = 'SemanticPredictions:0'
     FROZEN_GRAPH_NAME = 'frozen_inference_graph'
 
-    def __init__(self, tarball_path):
+    def __init__(self, frozen_model_path):
         """Creates and loads pre-trained deeplab model."""
         self.graph = tf.Graph()
 
         graph_def = None
-        # Extract frozen graph from tar archive.
-        tar_file = tarfile.open(tarball_path)
-        for tar_info in tar_file.getmembers():
-            if self.FROZEN_GRAPH_NAME in os.path.basename(tar_info.name):
-                file_handle = tar_file.extractfile(tar_info)
-                graph_def = tf.GraphDef.FromString(file_handle.read())
-                break
-
-        tar_file.close()
+        with tf.gfile.GFile(frozen_model_path, "rb") as f:
+            graph_def = tf.GraphDef()
+            graph_def.ParseFromString(f.read())
 
         if graph_def is None:
             raise RuntimeError('Cannot find inference graph in tar archive.')

@@ -1,4 +1,5 @@
-[![Build Status](https://travis-ci.org/IBM/MAX-Image-Segmenter.svg?branch=master)](https://travis-ci.org/IBM/MAX-Image-Segmenter) [![Website Status](https://img.shields.io/website/http/max-image-segmenter.max.us-south.containers.appdomain.cloud/swagger.json.svg?label=api+demo)](http://max-image-segmenter.max.us-south.containers.appdomain.cloud/)
+[![Build Status](https://travis-ci.org/IBM/MAX-Image-Segmenter.svg?branch=master)](https://travis-ci.org/IBM/MAX-Image-Segmenter) [![Website Status](https://img.shields.io/website/http/max-image-segmenter.max.us-south.containers.appdomain.cloud/swagger.json.svg?label=api+demo)](http://max-image-segmenter.max.us-south.containers.appdomain.cloud/)  
+[<img src="docs/deploy-max-to-ibm-cloud-with-kubernetes-button.png" width="400px">](http://ibm.biz/max-to-ibm-cloud-tutorial) 
 
 # IBM Developer Model Asset Exchange: Image Segmentation
 
@@ -26,7 +27,7 @@ segmentation map refers to pixels in the resized image, not the original input i
 | 6  | bus         | 13 | horse       | 20 | tv          |
 
 The model files are hosted on IBM Cloud Object Storage. The code in this repository deploys the model as a web service
-in a Docker container. This repository was developed as part of the [IBM Code Model Asset Exchange](https://developer.ibm.com/code/exchanges/models/).
+in a Docker container. This repository was developed as part of the [IBM Code Model Asset Exchange](https://developer.ibm.com/code/exchanges/models/) and the public API is powered by [IBM Cloud](https://ibm.biz/Bdz2XM).
 
 ## Model Metadata
 
@@ -52,7 +53,7 @@ in a Docker container. This repository was developed as part of the [IBM Code Mo
 | This repository | [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0) | [LICENSE](LICENSE) |
 | Model Code (3rd party) | [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0) | [TensorFlow Models Repository](https://github.com/tensorflow/models/blob/master/LICENSE) |
 | Model Weights | [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0) | [TensorFlow Models Repository](https://github.com/tensorflow/models/blob/master/LICENSE) |
-
+| Test Samples | [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0) | [Sample README](samples/README.md)
 
 ## Prerequisites
 
@@ -92,6 +93,8 @@ $ kubectl apply -f https://raw.githubusercontent.com/IBM/MAX-Image-Segmenter/mas
 ```
 
 The model will be available internally at port `5000`, but can also be accessed externally through the `NodePort`.
+
+A more elaborate tutorial on how to deploy this MAX model to production on [IBM Cloud](https://ibm.biz/Bdz2XM) can be found [here](http://ibm.biz/max-to-ibm-cloud-tutorial).
 
 ## Run Locally
 
@@ -234,3 +237,7 @@ then need to rebuild the Docker image (see [step 1](#1-build-the-model)).
 ### 6. Cleanup
 
 To stop the Docker container, type `CTRL` + `C` in your terminal.
+
+## Train this Model on Watson Machine Learning
+
+This model supports both fine-tuning with transfer learning and training from scratch on a custom model. Please follow the steps listed under the [training readme](training/README.md) to retrain the model on [Watson Machine Learning](https://www.ibm.com/cloud/machine-learning), a deep-learning as a service (DLaaS) offering of [IBM Cloud](https://ibm.biz/Bdz2XM).
