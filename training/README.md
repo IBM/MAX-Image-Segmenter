@@ -1,6 +1,6 @@
 ## Train the Model with Your Own Data
 
-- [Prepare Data for Training](#prepare-your-data-for-training)
+- [Prepare Data for Training](#prepare-data-for-training)
 - [Train the Model](#train-the-model)
 
 

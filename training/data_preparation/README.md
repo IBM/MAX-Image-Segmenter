@@ -37,7 +37,7 @@ In this document `$MODEL_REPO_HOME_DIR` refers to the cloned MAX model repositor
 
 The current directory, called `$DATA_PREP_DIR`, is thus `$MODEL_REPO_HOME_DIR/training/data_preparation/`
 
-An example dataset prepration is shown in the `$DATA_PREP_DIR/sample/datasets/` directory. Here the training image files we want to convert are under `$DATA_PREP_DIR/sample/JPEGImages/` and the labels are under `$DATA_PREP_DIR/sample/SegmentationClass`.
+An example dataset preparation script is shown in the `$DATA_PREP_DIR/sample/datasets/` directory. Here the training image files we want to convert are under `$DATA_PREP_DIR/sample/JPEGImages/` and the labels are under `$DATA_PREP_DIR/sample/SegmentationClass`.
 
 ### Preparing train, trainval and val Data Split
 Create 3 text files called `train.txt`, `val.txt` and `trainval.txt`. These files will contain the names of the files which are for training and validation from the dataset. The example dataset has this split at `$DATA_PREP_DIR/sample/ImageSets/`
