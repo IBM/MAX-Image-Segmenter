@@ -14,20 +14,20 @@ train:
       model_source:
             initial_model:
                   data_store: cloud_training_datastore
-                  bucket:
+                  bucket: mk-maxi
                   path:
             initial_model_local:
                   path: training_code/
       model_training_results:
             trained_model:
                   data_store: cloud_training_datastore
-                  bucket:
+                  bucket: mk-maxo
             trained_model_local:
                   path: ../custom_assets/
       data_source:
             training_data:
                   data_store: cloud_training_datastore
-                  bucket:
+                  bucket: mk-maxi
                   path:
             training_data_local:
                   path: sample_training_data/
