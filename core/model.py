@@ -23,11 +23,8 @@ from config import _FULL_MODEL_PATH
 from config import _MOBILE_MODEL_PATH
 from PIL import Image
 import io
-import logging
 from config import MODEL_META_DATA as model_meta
 from maxfw.model import MAXModelWrapper
-
-logger = logging.getLogger()
 
 
 # Import model parameters as environmental variables if they were passed to docker run
