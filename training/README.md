@@ -1,19 +1,24 @@
 ## Train the Model with Your Own Data
 
+This document provides instructions to train the model on Watson Machine Learning, an offering of IBM Cloud. The instructions in this document assume that you already have an IBM Cloud account. If not, please create an [IBM Cloud](https://ibm.biz/Bdz2XM) account. 
+
 - [Prepare Data for Training](#prepare-data-for-training)
 - [Train the Model](#train-the-model)
-
+- [Rebuild the Model-Serving Microservice](#rebuild-the-model-serving-microservice)
 
 ## Prepare Data for Training
 
 To prepare your data for training complete the steps listed in [data_preparation/README.md](data_preparation/README.md).
 
-
 ## Train the Model
 
-In this document `$MODEL_REPO_HOME_DIR` refers to the cloned MAX model repository directory, e.g.
-`/users/hi_there/MAX-Image-Segmenter`. 
+- [Install Local Prerequisites](#install-local-prerequisites)
+- [Customize Training](#customize-training)
+- [Run the Setup Script](#run-the-setup-script)
+- [Train the Model Using Watson Machine Learning](#train-the-model-using-watson-machine-learning)
 
+In this document `$MODEL_REPO_HOME_DIR` refers to the cloned MAX model repository directory, e.g.
+`/users/gone_fishing/MAX-Image-Segmenter`. 
 
 ### Install Local Prerequisites
 
@@ -27,11 +32,13 @@ Open a terminal window, change dir into `$MODEL_REPO_HOME_DIR/training` and inst
    ```
  The directory contains two Python scripts, `setup_max_model_training` and `train_max_model`, which you'll use to prepare your environment for model training and to perform model training on Watson Machine Learning. 
 
-### Use Pre Trained Weights
+### Customize Training
+
+#### Use Pre Trained Weights
 
 If you wish to perform transfer learning or resume from a previous checkpoint, place the checkpoint files in the `$MODEL_REPO_HOME_DIR/training/sample_training_data/initial_model/` folder. The checkpoint files usually consist one `model.ckpt-<iteration_number>.data*` file, one corresponding `model.ckpt-<iteration_number>.index` file and a `checkpoint` file which has the name of the checkpoint. For example if you wish to resume from a previous training run of 30000 iterations, your files would ideally be called `model.ckpt-30000.data.0000-of-0001`, `model.ckpt-30000.index` and `checkpoint` with the checkpoint file having one entry `model_checkpoint_path: "model.ckpt-30000"`.
 
-### Customize Model Specific Parameters
+#### Customize Hyper-parameters
 
 If you wish to change training hyper-parameters like `num_iterations`, `learning_rate`, `stride_size` etc, pass the corresponding arguments to `$MODEL_REPO_HOME_DIR/training/training_code/training_command.sh`. You can also change the backbone/model type to either `full` (which uses the `xception_65` architecture) or the faster `mobile`(which uses a `mobilenet_v2` architecture).
 
@@ -59,13 +66,13 @@ If you wish to change training hyper-parameters like `num_iterations`, `learning
      ------------------------------------------------------------------------------
      Model training setup is complete and your configuration file was updated.
      ------------------------------------------------------------------------------
-     Training data bucket name   : image-segmenter-sample
+     Training data bucket name   : image-segmenter-sample-input
      Local data directory        : sample_training_data/
      Training results bucket name: image-segmenter-sample-output
      Compute configuration       : k80     
    ```
 
-   On Microsoft Windows run `python setup_max_model_training max-image-segmenter-training-config.yaml`.
+   > On Microsoft Windows run `python setup_max_model_training max-image-segmenter-training-config.yaml`.
 
    The setup script updates the training configuration file using the information you've provided. For security reasons, confidential information, such as API keys or passwords, are _not_ stored in this file. Instead the script displays a set of environment variables that you must define to make this information available to the training script.
    
@@ -112,7 +119,7 @@ Complete the following steps in the terminal window where the earlier mentioned 
      ...
    ```
 
-   On Microsoft Windows run `python train_max_model max-image-segmenter-training-config.yaml prepare`.
+   > On Microsoft Windows run `python train_max_model max-image-segmenter-training-config.yaml prepare`.
 
    If preparation completed successfully:
 
@@ -186,7 +193,7 @@ Complete the following steps in the terminal window where the earlier mentioned 
      training-log.txt 
    ```
 
-4. Return to the parent directory `$MODEL_REPO_HOME_DIR/training`.
+4. Return to the parent directory `$MODEL_REPO_HOME_DIR`.
 
    ```
    $ cd ..
@@ -194,7 +201,7 @@ Complete the following steps in the terminal window where the earlier mentioned 
 
 ## Rebuild the Model-Serving Microservice
 
-Once the training run is complete, there should be an updated `frozen_inference_graph.pb` file in `$MODEL_REPO_HOME_DIR/custom_assets` folder. At this point the Docker container can be rebuilt using the command below from the root directory of the repo ie `$MODEL_REPO_HOME_DIR`.
+The model-serving microservice out of the box serves the pre-trained model which was trained on PASCAL VOC 2012 or MobileNetV2 (depending on the selected model architecture). To serve the model trained on your dataset you have to rebuild the Docker image:
 
 ```shell
 
