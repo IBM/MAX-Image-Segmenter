@@ -205,7 +205,7 @@ The model-serving microservice out of the box serves the pre-trained model which
 
 ```shell
 
-$ docker build -t max-image-segmenter --build_arg use_pre_trained_model=false .
+$ docker build -t max-image-segmenter --build-arg use_pre_trained_model=false .
 
 ```
 Once the container is built, run the following command to run the container as mentioned in the main readme section.
