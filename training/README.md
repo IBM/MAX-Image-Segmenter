@@ -1,19 +1,24 @@
 ## Train the Model with Your Own Data
 
+This document provides instructions to train the model on Watson Machine Learning, an offering of IBM Cloud. The instructions in this document assume that you already have an IBM Cloud account. If not, please create an [IBM Cloud](https://ibm.biz/Bdz2XM) account. 
+
 - [Prepare Data for Training](#prepare-data-for-training)
 - [Train the Model](#train-the-model)
-
+- [Rebuild the Model-Serving Microservice](#rebuild-the-model-serving-microservice)
 
 ## Prepare Data for Training
 
 To prepare your data for training complete the steps listed in [data_preparation/README.md](data_preparation/README.md).
 
-
 ## Train the Model
 
-In this document `$MODEL_REPO_HOME_DIR` refers to the cloned MAX model repository directory, e.g.
-`/users/hi_there/MAX-Image-Segmenter`. 
+- [Install Local Prerequisites](#install-local-prerequisites)
+- [Customize Training](#customize-training)
+- [Run the Setup Script](#run-the-setup-script)
+- [Train the Model Using Watson Machine Learning](#train-the-model-using-watson-machine-learning)
 
+In this document `$MODEL_REPO_HOME_DIR` refers to the cloned MAX model repository directory, e.g.
+`/users/gone_fishing/MAX-Image-Segmenter`. 
 
 ### Install Local Prerequisites
 
@@ -25,18 +30,25 @@ Open a terminal window, change dir into `$MODEL_REPO_HOME_DIR/training` and inst
    $ pip install -r requirements.txt
     ... 
    ```
+ The directory contains two Python scripts, `setup_max_model_training` and `train_max_model`, which you'll use to prepare your environment for model training and to perform model training on Watson Machine Learning. 
 
-### Use Pre Trained Weights
+### Customize Training
+
+#### Use Pre Trained Weights
 
 If you wish to perform transfer learning or resume from a previous checkpoint, place the checkpoint files in the `$MODEL_REPO_HOME_DIR/training/sample_training_data/initial_model/` folder. The checkpoint files usually consist one `model.ckpt-<iteration_number>.data*` file, one corresponding `model.ckpt-<iteration_number>.index` file and a `checkpoint` file which has the name of the checkpoint. For example if you wish to resume from a previous training run of 30000 iterations, your files would ideally be called `model.ckpt-30000.data.0000-of-0001`, `model.ckpt-30000.index` and `checkpoint` with the checkpoint file having one entry `model_checkpoint_path: "model.ckpt-30000"`.
 
-### Customize Model Specific Parameters
+#### Customize Hyper-parameters
 
 If you wish to change training hyper-parameters like `num_iterations`, `learning_rate`, `stride_size` etc, pass the corresponding arguments to `$MODEL_REPO_HOME_DIR/training/training_code/training_command.sh`. You can also change the backbone/model type to either `full` (which uses the `xception_65` architecture) or the faster `mobile`(which uses a `mobilenet_v2` architecture).
 
 ### Run the Setup Script
 
-The `wml_setup.py` script prepares your local environment and your IBM Cloud resources for model training.
+ To perform model training, you need access to a Watson Machine Learning service instance and a Cloud Object Storage service instance on IBM Cloud. The `setup_max_model_training` Python script prepares your IBM Cloud resources for model training and configures your local environment. 
+
+ #### Steps
+
+1. Open a terminal window.
 
 1. Locate the training configuration file. It is named `max-image-segmenter-training-config.yaml`.
 
@@ -46,33 +58,60 @@ The `wml_setup.py` script prepares your local environment and your IBM Cloud res
      max-image-segmenter-training-config.yaml
    ```
 
-1. Configure your environment for model training. Run `wml_setup.py` and follow the prompts.
+2. Run `setup_max_model_training` and follow the prompts to configure model training.
 
    ```
-    $ python wml_setup.py max-image-segmenter-training-config.yaml 
+    $ ./setup_max_model_training max-image-segmenter-training-config.yaml
      ...
+     ------------------------------------------------------------------------------
+     Model training setup is complete and your configuration file was updated.
+     ------------------------------------------------------------------------------
+     Training data bucket name   : image-segmenter-sample-input
+     Local data directory        : sample_training_data/
+     Training results bucket name: image-segmenter-sample-output
+     Compute configuration       : k80     
    ```
+
+   > On Microsoft Windows run `python setup_max_model_training max-image-segmenter-training-config.yaml`.
+
+   The setup script updates the training configuration file using the information you've provided. For security reasons, confidential information, such as API keys or passwords, are _not_ stored in this file. Instead the script displays a set of environment variables that you must define to make this information available to the training script.
    
-1. After setup has completed, define the displayed environment variables. These variables provide the model training script with access credentials for your Watson Machine Learning service and Cloud Object Storage service. 
+3. Once setup is completed, define the displayed environment variables. The model training script `train_max_model` uses those variables to access your training resources.
 
-   MacOS example:
-
+   MacOS/Linux example:
+   
    ```
-   $ export ML_INSTANCE=...
    $ export ML_APIKEY=...
+   $ export ML_INSTANCE=...
    $ export ML_ENV=...
    $ export AWS_ACCESS_KEY_ID=...
    $ export AWS_SECRET_ACCESS_KEY=...
    ```
+
+   Microsoft Windows:
    
-   > The training script `wml_train.py` requires these environment variables. If they are not set, model training cannot be started.
+   ```
+   $ set ML_APIKEY=...
+   $ set ML_INSTANCE=...
+   $ set ML_ENV=...
+   $ set AWS_ACCESS_KEY_ID=...
+   $ set AWS_SECRET_ACCESS_KEY=...
+   ```
+
+   > If you re-run the setup script and select a different Watson Machine Learning service instance or Cloud Object Storage service instance the displayed values will change. The values do not change if you modify any other configuration setting, such as the input data bucket or the compute configuration.
 
 ### Train the Model Using Watson Machine Learning
 
-1. Verify that the training preparation steps complete successfully. Replace `<model-name.yaml>` with your configuration file.
+The `train_max_model` script verifies your configuration settings, packages the model training code, uploads it to Watson Machine Learning, launches the training run, monitors the training run, and downloads the trained model artifacts.
+
+Complete the following steps in the terminal window where the earlier mentioned environment variables are defined. 
+
+#### Steps
+
+1. Verify that the training preparation steps complete successfully.
 
    ```
-    $ python wml_train.py max-image-segmenter-training-config.yaml prepare
+    $ ./train_max_model max-image-segmenter-training-config.yaml prepare
      ...
      # --------------------------------------------------------
      # Checking environment variables ...
@@ -80,40 +119,54 @@ The `wml_setup.py` script prepares your local environment and your IBM Cloud res
      ...
    ```
 
+   > On Microsoft Windows run `python train_max_model max-image-segmenter-training-config.yaml prepare`.
+
    If preparation completed successfully:
 
-    - The required environment variables are defined.
-    - Training data is present in the Cloud Object Storage bucket that Watson Machine Learning will access to train the model.
-    - The model training code is packaged in a ZIP file named `max-image-segmenter-model-building-code.zip` that Watson Machine Learning uses to train the model.
+    - Training data is present in the Cloud Object Storage bucket that WML will access during model training.
+    - Model training code is packaged `max-image-segmenter-model-building-code.zip`
 
 1. Start model training.
 
    ```
-   $ python wml_train.py <...-training-config.yaml> package
+   $ ./train_max_model max-image-segmenter-training-config.yaml package
     ...
     # --------------------------------------------------------
     # Starting model training ...
     # --------------------------------------------------------
     Training configuration summary:
-    Training run name     : train-max-image-segmenter
+    Training run name     : train-max-...
     Training data bucket  : ...
     Results bucket        : ...
     Model-building archive: max-image-segmenter-model-building-code.zip
     Model training was started. Training id: model-...
     ...
    ```
-   
-    > Take note of the training id.
 
-1. Monitor the model training progress.
+   > On Microsoft Windows run `python train_max_model max-image-segmenter-training-config.yaml package`.
+
+1. Note the displayed `Training id`. It uniquely identifies your training run in Watson Machine Learning.
+
+1. Monitor training progress.
 
    ```
    ...
-   Training status is updated every 15 seconds - (p)ending (r)unning (e)rror (c)ompleted: 
+   Checking model training status every 15 seconds. Press Ctrl+C once to stop monitoring or  press Ctrl+C twice to cancel training.
+   Status - (p)ending (r)unning (e)rror (c)ompleted or canceled:
    ppppprrrrrrr...
    ```
 
-   > Training continues should your training script get disconnected (e.g. because you terminated the script or lost network connectivity). You can resume monitoring by running `python wml_train.py max-image-segmenter-training-config.yaml package <training-id>`.
+   To **stop** monitoring (but continue model training), press `Ctrl+C` once.
+ 
+   To **restart** monitoring, run the following command, replacing `<training-id>` with the id that was displayed when you started model training. 
+   
+      ```
+      ./train_max_model max-image-segmenter-training-config.yaml package <training-id>
+      ```
+
+    > On Microsoft Windows run `python ./train_max_model max-image-segmenter-training-config.yaml package <training-id>`
+  
+   To **cancel** the training run, press `Ctrl+C` twice.
 
    After training has completed the training log file `training-log.txt` is downloaded along with the trained model artifacts.
 
@@ -131,7 +184,7 @@ The `wml_setup.py` script prepares your local environment and your IBM Cloud res
    ....................................................................................
    ```
 
-   > If training was terminated early due to an error only the log file is downloaded. Inspect it to identify the problem.
+   If training was terminated early due to an error only the log file is downloaded. Inspect it to identify the problem.
 
    ```
    $ ls training_output/
@@ -140,15 +193,19 @@ The `wml_setup.py` script prepares your local environment and your IBM Cloud res
      training-log.txt 
    ```
 
-1. Return to the parent directory
+4. Return to the parent directory `$MODEL_REPO_HOME_DIR`.
 
-### Re-build the Docker Image
+   ```
+   $ cd ..
+   ```
 
-Once the training run is complete, there should be an updated `frozen_inference_graph.pb` file in `$MODEL_REPO_HOME_DIR/custom_assets` folder. At this point the Docker container can be rebuilt using the command below from the root directory of the repo ie `$MODEL_REPO_HOME_DIR`.
+## Rebuild the Model-Serving Microservice
+
+The model-serving microservice out of the box serves the pre-trained model which was trained on PASCAL VOC 2012 or MobileNetV2 (depending on the selected model architecture). To serve the model trained on your dataset you have to rebuild the Docker image:
 
 ```shell
 
-$ docker build -t max-image-segmenter --build_arg use_pre_trained_model=false .
+$ docker build -t max-image-segmenter --build-arg use_pre_trained_model=false .
 
 ```
 Once the container is built, run the following command to run the container as mentioned in the main readme section.

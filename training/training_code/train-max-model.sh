@@ -37,7 +37,7 @@ echo "RESULT_DIR: $RESULT_DIR"
 # Perform training tasks
 # ---------------------------------------------------------------
 
-pip install -r requirements.txt
+pip install -r training_requirements.txt
 
 TRAINING_CMD="./training_command.sh"
 
