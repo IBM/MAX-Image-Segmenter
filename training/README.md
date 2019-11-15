@@ -30,7 +30,7 @@ Open a terminal window, change dir into `$MODEL_REPO_HOME_DIR/training` and inst
    $ pip install -r requirements.txt
     ... 
    ```
- The directory contains two Python scripts, `setup_max_model_training` and `train_max_model`, which you'll use to prepare your environment for model training and to perform model training on Watson Machine Learning. 
+ The directory contains two Python scripts, `setup_max_model_training.py` and `train_max_model.py`, which you'll use to prepare your environment for model training and to perform model training on Watson Machine Learning. 
 
 ### Customize Training
 
@@ -44,7 +44,7 @@ If you wish to change training hyper-parameters like `num_iterations`, `learning
 
 ### Run the Setup Script
 
- To perform model training, you need access to a Watson Machine Learning service instance and a Cloud Object Storage service instance on IBM Cloud. The `setup_max_model_training` Python script prepares your IBM Cloud resources for model training and configures your local environment. 
+ To perform model training, you need access to a Watson Machine Learning service instance and a Cloud Object Storage service instance on IBM Cloud. The `setup_max_model_training.py` script prepares your IBM Cloud resources for model training and configures your local environment. 
 
  #### Steps
 
@@ -58,10 +58,10 @@ If you wish to change training hyper-parameters like `num_iterations`, `learning
      max-image-segmenter-training-config.yaml
    ```
 
-2. Run `setup_max_model_training` and follow the prompts to configure model training.
+2. Run `setup_max_model_training.py` and follow the prompts to configure model training.
 
    ```
-    $ ./setup_max_model_training max-image-segmenter-training-config.yaml
+    $ python setup_max_model_training.py max-image-segmenter-training-config.yaml
      ...
      ------------------------------------------------------------------------------
      Model training setup is complete and your configuration file was updated.
@@ -72,11 +72,9 @@ If you wish to change training hyper-parameters like `num_iterations`, `learning
      Compute configuration       : k80     
    ```
 
-   > On Microsoft Windows run `python setup_max_model_training max-image-segmenter-training-config.yaml`.
-
    The setup script updates the training configuration file using the information you've provided. For security reasons, confidential information, such as API keys or passwords, are _not_ stored in this file. Instead the script displays a set of environment variables that you must define to make this information available to the training script.
    
-3. Once setup is completed, define the displayed environment variables. The model training script `train_max_model` uses those variables to access your training resources.
+3. Once setup is completed, define the displayed environment variables. The model training script `train_max_model.py` uses those variables to access your training resources.
 
    MacOS/Linux example:
    
@@ -102,7 +100,7 @@ If you wish to change training hyper-parameters like `num_iterations`, `learning
 
 ### Train the Model Using Watson Machine Learning
 
-The `train_max_model` script verifies your configuration settings, packages the model training code, uploads it to Watson Machine Learning, launches the training run, monitors the training run, and downloads the trained model artifacts.
+The `train_max_model.py` script verifies your configuration settings, packages the model training code, uploads it to Watson Machine Learning, launches the training run, monitors the training run, and downloads the trained model artifacts.
 
 Complete the following steps in the terminal window where the earlier mentioned environment variables are defined. 
 
@@ -111,15 +109,13 @@ Complete the following steps in the terminal window where the earlier mentioned 
 1. Verify that the training preparation steps complete successfully.
 
    ```
-    $ ./train_max_model max-image-segmenter-training-config.yaml prepare
+    $ python train_max_model.py max-image-segmenter-training-config.yaml prepare
      ...
      # --------------------------------------------------------
      # Checking environment variables ...
      # --------------------------------------------------------
      ...
    ```
-
-   > On Microsoft Windows run `python train_max_model max-image-segmenter-training-config.yaml prepare`.
 
    If preparation completed successfully:
 
@@ -129,7 +125,7 @@ Complete the following steps in the terminal window where the earlier mentioned 
 1. Start model training.
 
    ```
-   $ ./train_max_model max-image-segmenter-training-config.yaml package
+   $ python train_max_model.py max-image-segmenter-training-config.yaml package
     ...
     # --------------------------------------------------------
     # Starting model training ...
@@ -142,8 +138,6 @@ Complete the following steps in the terminal window where the earlier mentioned 
     Model training was started. Training id: model-...
     ...
    ```
-
-   > On Microsoft Windows run `python train_max_model max-image-segmenter-training-config.yaml package`.
 
 1. Note the displayed `Training id`. It uniquely identifies your training run in Watson Machine Learning.
 
@@ -161,10 +155,8 @@ Complete the following steps in the terminal window where the earlier mentioned 
    To **restart** monitoring, run the following command, replacing `<training-id>` with the id that was displayed when you started model training. 
    
       ```
-      ./train_max_model max-image-segmenter-training-config.yaml package <training-id>
+      python train_max_model.py max-image-segmenter-training-config.yaml package <training-id>
       ```
-
-    > On Microsoft Windows run `python ./train_max_model max-image-segmenter-training-config.yaml package <training-id>`
   
    To **cancel** the training run, press `Ctrl+C` twice.
 
