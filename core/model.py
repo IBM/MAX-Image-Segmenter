@@ -33,11 +33,11 @@ image_size = int(os.environ.get('IMAGE_SIZE', default=513))
 
 if (image_size < 16) or (image_size > 1024):
     image_size = 513
-    warnings.warn('image size not in range 16 to 1024, reverted to default image size of 513')
+    warnings.warn('Specified image size is not in range 16 to 1024. Using default image size of 513.')
 
-if (model_type != 'full') and (model_type != 'mobile'):
+if model_type not in ('full', 'mobile'):
     model_type = 'mobile'
-    warnings.warn('model type not mobile or full, reverted to default model type mobile')
+    warnings.warn('Specified model type is neither "mobile" nor "full". Using model type "mobile".')
 
 
 class DeepLabModel(object):
