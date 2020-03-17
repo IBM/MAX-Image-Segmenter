@@ -13,6 +13,8 @@
 # limitations under the License.
 #
 
+import os
+
 import pytest
 import requests
 
@@ -59,12 +61,27 @@ def test_labels():
     assert labels[3]['name'] == 'bird'
 
 
+def _get_image_size():
+
+    DEFAULT_IMAGE_SIZE = 513
+
+    image_size = os.environ.get('IMAGE_SIZE', default=str(DEFAULT_IMAGE_SIZE))
+    if not image_size.isdigit():
+        image_size = str(DEFAULT_IMAGE_SIZE)
+    image_size = int(image_size)
+    if not 16 <= image_size <= 1024:
+        image_size = DEFAULT_IMAGE_SIZE
+
+    return image_size
+
+
 def _check_response(r):
     assert r.status_code == 200
     response = r.json()
 
     assert response['status'] == 'ok'
-    assert response['image_size'] == [513, 256]
+    image_size = _get_image_size()
+    assert response['image_size'] == [image_size, image_size / 2]
     assert len(response['seg_map']) == response['image_size'][1]
 
     assert response['seg_map'][0][0] == 0  # there are no objects in the top left corner
