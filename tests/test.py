@@ -85,8 +85,12 @@ def _check_response(r):
     assert len(response['seg_map']) == response['image_size'][1]
 
     assert response['seg_map'][0][0] == 0  # there are no objects in the top left corner
-    assert response['seg_map'][130][170] == 15  # there is a person here
-    assert response['seg_map'][200][500] == 20  # computer monitor (labeled as "TV") in bottom right corner
+    if image_size == 513:
+        assert response['seg_map'][130][170] == 15  # there is a person here
+        assert response['seg_map'][200][500] == 20  # computer monitor (labeled as "TV") in bottom right corner
+    elif image_size == 333:
+        assert response['seg_map'][65][93] == 15  # there is a person here
+        # computer monitor won't be detected here
 
 
 def test_predict():
