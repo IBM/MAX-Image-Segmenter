@@ -81,7 +81,7 @@ def _check_response(r):
 
     assert response['status'] == 'ok'
     image_size = _get_image_size()
-    assert response['image_size'] == [image_size, image_size / 2]
+    assert response['image_size'] == [image_size, image_size // 2]
     assert len(response['seg_map']) == response['image_size'][1]
 
     assert response['seg_map'][0][0] == 0  # there are no objects in the top left corner
