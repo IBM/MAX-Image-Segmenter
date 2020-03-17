@@ -29,11 +29,18 @@ from maxfw.model import MAXModelWrapper
 
 # Import model parameters as environmental variables if they were passed to docker run
 model_type = os.environ.get('MODEL_TYPE', default='mobile')
-image_size = int(os.environ.get('IMAGE_SIZE', default=513))
+DEFAULT_IMAGE_SIZE = 513
+image_size = os.environ.get('IMAGE_SIZE', default=str(DEFAULT_IMAGE_SIZE))
+
+if not image_size.isdigit():
+    image_size = str(DEFAULT_IMAGE_SIZE)
+    warnings.warn(f'Specified image size is not a positive integer. Using default image size of {DEFAULT_IMAGE_SIZE}.')
+
+image_size = int(image_size)
 
 if (image_size < 16) or (image_size > 1024):
-    image_size = 513
-    warnings.warn('Specified image size is not in range 16 to 1024. Using default image size of 513.')
+    image_size = DEFAULT_IMAGE_SIZE
+    warnings.warn(f'Specified image size is not in range 16 to 1024. Using default image size of {DEFAULT_IMAGE_SIZE}.')
 
 if model_type not in ('full', 'mobile'):
     model_type = 'mobile'

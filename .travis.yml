@@ -2,12 +2,21 @@ language: python
 python:
   - 3.6
 
+env:
+  - MODEL_TYPE=mobile
+  - MODEL_TYPE=mobile IMAGE_SIZE=333
+  - MODEL_TYPE=full
+  - MODEL_TYPE=full IMAGE_SIZE=333
+  - MODEL_TYPE=vacuum
+  - IMAGE_SIZE=9999999
+  - IMAGE_SIZE=talk-big
+
 services:
   - docker
 
 install:
   - docker build -t max-image-segmenter .
-  - docker run -it -d -p 5000:5000 max-image-segmenter
+  - docker run -e MODEL_TYPE=$MODEL_TYPE -e IMAGE_SIZE=$IMAGE_SIZE -it -d -p 5000:5000 max-image-segmenter
   - pip install pytest requests flake8
 
 before_script:
