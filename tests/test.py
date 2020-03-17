@@ -90,7 +90,7 @@ def _check_response(r):
         assert response['seg_map'][200][500] == 20  # computer monitor (labeled as "TV") in bottom right corner
     elif image_size == 333:
         assert response['seg_map'][65][93] == 15  # there is a person here
-        # computer monitor won't be detected here
+        # computer monitor won't be detected here, probably due to lower resolution
 
 
 def test_predict():
