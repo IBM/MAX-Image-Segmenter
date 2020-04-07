@@ -58,7 +58,7 @@ If you wish to change training hyper-parameters like `num_iterations`, `learning
      max-image-segmenter-training-config.yaml
    ```
 
-2. Run `setup_max_model_training.py` and follow the prompts to configure model training.
+2. Run `setup_max_model_training.py` and follow the prompts to configure model training. If you do not have an IBM Cloud API key to point to, you can generate one by following the instructions located [here](https://cloud.ibm.com/docs/iam?topic=iam-userapikey#userapikey).
 
    ```
     $ python setup_max_model_training.py max-image-segmenter-training-config.yaml
