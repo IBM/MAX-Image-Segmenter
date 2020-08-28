@@ -1,4 +1,4 @@
-FROM codait/max-base:v1.3.2
+FROM quay.io/codait/max-base:v1.3.2
 
 ARG model_bucket=https://max-cdn.cdn.appdomain.cloud/max-image-segmenter/1.1.0
 

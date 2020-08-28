@@ -27,6 +27,6 @@ spec:
     spec:
       containers:
       - name: max-image-segmenter
-        image: codait/max-image-segmenter:latest
+        image: quay.io/codait/max-image-segmenter:latest
         ports:
         - containerPort: 5000
