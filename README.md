@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/IBM/MAX-Image-Segmenter.svg?branch=master)](https://travis-ci.org/IBM/MAX-Image-Segmenter) [![Website Status](https://img.shields.io/website/http/max-image-segmenter.max.us-south.containers.appdomain.cloud/swagger.json.svg?label=api+demo)](http://max-image-segmenter.max.us-south.containers.appdomain.cloud/)  
+[![Build Status](https://travis-ci.org/IBM/MAX-Image-Segmenter.svg?branch=master)](https://travis-ci.org/IBM/MAX-Image-Segmenter) [![Website Status](https://img.shields.io/website/http/max-image-segmenter.codait-prod-41208c73af8fca213512856c7a09db52-0000.us-east.containers.appdomain.cloud/swagger.json.svg?label=api+demo)](http://max-image-segmenter.codait-prod-41208c73af8fca213512856c7a09db52-0000.us-east.containers.appdomain.cloud/)  
 [<img src="docs/deploy-max-to-ibm-cloud-with-kubernetes-button.png" width="400px">](http://ibm.biz/max-to-ibm-cloud-tutorial) 
 
 # IBM Developer Model Asset Exchange: Image Segmentation
@@ -72,7 +72,7 @@ in a Docker container. This repository was developed as part of the [IBM Code Mo
 To run the docker image, which automatically starts the model serving API, run:
 
 ```
-$ docker run -it -p 5000:5000 codait/max-image-segmenter
+$ docker run -it -p 5000:5000 quay.io/codait/max-image-segmenter
 ```
 
 This will pull a pre-built image from Docker Hub (or use an existing image if already cached locally) and run it.
@@ -80,7 +80,7 @@ If you'd rather checkout and build the model locally you can follow the [run loc
 
 ## Deploy on Red Hat OpenShift
 
-You can deploy the model-serving microservice on Red Hat OpenShift by following the instructions for the OpenShift web console or the OpenShift Container Platform CLI [in this tutorial](https://developer.ibm.com/tutorials/deploy-a-model-asset-exchange-microservice-on-red-hat-openshift/), specifying `codait/max-image-segmenter` as the image name.
+You can deploy the model-serving microservice on Red Hat OpenShift by following the instructions for the OpenShift web console or the OpenShift Container Platform CLI [in this tutorial](https://developer.ibm.com/tutorials/deploy-a-model-asset-exchange-microservice-on-red-hat-openshift/), specifying `quay.io/codait/max-image-segmenter` as the image name.
 
 ## Deploy on Kubernetes
 
