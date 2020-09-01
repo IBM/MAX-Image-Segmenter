@@ -70,7 +70,7 @@ convert_data.py:
 ```
 
 
-2. Once you have the output `.tfrecord` files (will be in `$DATA_PREP_DIR/sample/tfrecords` by default), move them to the `$MODEL_REPO_HOME_DIR/training/sample_training_data` directory in the root folder of this repo. Navigate to the root directory of the repo and run the following command:
+2. Once you have the output `.tfrecord` files (will be in `$DATA_PREP_DIR/sample/tfrecord` by default), move them to the `$MODEL_REPO_HOME_DIR/training/sample_training_data` directory in the root folder of this repo. Navigate to the root directory of the repo and run the following command:
 ```shell
-$ cp training/data_preparation/sample/tfrecords/* training/sample_training_data/
+$ cp training/data_preparation/sample/tfrecord/* training/sample_training_data/
 ```
