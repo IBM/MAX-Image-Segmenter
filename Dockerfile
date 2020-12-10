@@ -6,16 +6,21 @@ ARG model_file=assets.tar.gz
 
 ARG use_pre_trained_model=true
 
-WORKDIR /workspace
+RUN useradd --create-home max
+
+WORKDIR /home/max/
+
+RUN cd /home/max && mkdir assets
+
 RUN if [ "$use_pre_trained_model" = "true" ] ; then\
       wget -nv --show-progress --progress=bar:force:noscroll ${model_bucket}/${model_file} --output-document=assets/${model_file} && \
       tar -x -C assets/ -f assets/${model_file} -v && rm assets/${model_file}; \
     fi
 
-COPY requirements.txt /workspace
-RUN pip install -r requirements.txt
+COPY requirements.txt /home/max/
+RUN pip install -r /home/max/requirements.txt
 
-COPY . /workspace
+COPY . /home/max/
 
 RUN if [ "$use_pre_trained_model" = "true" ] ; then \
       # validate downloaded pre-trained model assets
@@ -29,4 +34,4 @@ RUN if [ "$use_pre_trained_model" = "true" ] ; then \
 
 EXPOSE 5000
 
-CMD python /workspace/app.py
+CMD python app.py
