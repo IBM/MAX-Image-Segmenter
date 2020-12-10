@@ -34,4 +34,6 @@ RUN if [ "$use_pre_trained_model" = "true" ] ; then \
 
 EXPOSE 5000
 
+USER max
+
 CMD python app.py
