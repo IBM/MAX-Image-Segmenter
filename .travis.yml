@@ -21,7 +21,7 @@ install:
 
 before_script:
   - flake8 .
-  - bandit -r .
+  - bandit -r . --exclude /tests,/training
   - sleep 30
 
 script:
