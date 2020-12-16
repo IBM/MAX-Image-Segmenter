@@ -12,7 +12,7 @@ RUN if [ "$use_pre_trained_model" = "true" ] ; then\
     fi
 
 COPY requirements.txt .
-RUN pip install -r /home/max/requirements.txt
+RUN pip install -r requirements.txt
 
 COPY . .
 
