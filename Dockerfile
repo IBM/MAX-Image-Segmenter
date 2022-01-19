@@ -1,6 +1,6 @@
 FROM quay.io/codait/max-base:v1.4.0
 
-ARG model_bucket=https://max-cdn.cdn.appdomain.cloud/max-image-segmenter/1.1.0
+ARG model_bucket=https://codait-cos-max.s3.us.cloud-object-storage.appdomain.cloud/max-image-segmenter/1.1.0
 
 ARG model_file=assets.tar.gz
 
